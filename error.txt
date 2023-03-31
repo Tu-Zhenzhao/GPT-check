@@ -1,0 +1,1865 @@
+❯ rm -rf node_modules package-lock.json
+npm install
+
+npm WARN deprecated crypto@1.0.1: This package is no longer supported. It's now a built-in Node module. If you've depended on crypto, you should switch to the one that's built-in.
+npm WARN deprecated querystring@0.2.0: The querystring API is considered Legacy. new code should use the URLSearchParams API instead.
+npm WARN deprecated popper.js@1.16.1: You can find the new Popper v2 at @popperjs/core, this package is dedicated to the legacy v1
+
+> jupyterlab-chatgpt@0.1.0 prepare
+> npm run clean && npm run build
+
+
+> jupyterlab-chatgpt@0.1.0 clean
+> rimraf lib tsconfig.tsbuildinfo
+
+
+> jupyterlab-chatgpt@0.1.0 build
+> tsc
+
+index.ts:22:52 - error TS2345: Argument of type '{ value: string; }' is not assignable to parameter of type 'IOptions'.
+  Object literal may only specify known properties, and 'value' does not exist in type 'IOptions'.
+
+22       const newCellModel = new MarkdownCellModel({ value: generatedText });
+                                                      ~~~~~~~~~~~~~~~~~~~~
+
+index.ts:23:40 - error TS2345: Argument of type '{ model: MarkdownCellModel; }' is not assignable to parameter of type 'IOptions'.
+  Property 'rendermime' is missing in type '{ model: MarkdownCellModel; }' but required in type 'IOptions'.
+
+23       const newCell = new MarkdownCell({ model: newCellModel });
+                                          ~~~~~~~~~~~~~~~~~~~~~~~
+
+  node_modules/@jupyterlab/cells/lib/widget.d.ts:541:9
+    541         rendermime: IRenderMimeRegistry;
+                ~~~~~~~~~~
+    'rendermime' is declared here.
+
+index.ts:32:14 - error TS2322: Type 'Token<INotebookTracker>' is not assignable to type 'Token<any>'.
+  Types have separate declarations of a private property '_tokenStructuralPropertyT'.
+
+32   requires: [INotebookTracker],
+                ~~~~~~~~~~~~~~~~
+
+node_modules/@jupyterlab/codeeditor/lib/editor.d.ts:47:15 - error TS2411: Property 'toJSON' of type '() => any' is not assignable to 'string' index type 'JSONValue'.
+
+47     interface ICoordinate extends JSONObject, ClientRect {
+                 ~~~~~~~~~~~
+
+node_modules/@types/react/index.d.ts:3079:14 - error TS2300: Duplicate identifier 'LibraryManagedAttributes'.
+
+3079         type LibraryManagedAttributes<C, P> = C extends React.MemoExoticComponent<infer T> | React.LazyExoticComponent<infer T>
+                  ~~~~~~~~~~~~~~~~~~~~~~~~
+
+  ../node_modules/@types/react/index.d.ts:3135:14
+    3135         type LibraryManagedAttributes<C, P> = C extends React.MemoExoticComponent<infer T> | React.LazyExoticComponent<infer T>
+                      ~~~~~~~~~~~~~~~~~~~~~~~~
+    'LibraryManagedAttributes' was also declared here.
+
+node_modules/@types/react/index.d.ts:3090:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'a' must be of type 'DetailedHTMLProps<AnchorHTMLAttributes<HTMLAnchorElement>, HTMLAnchorElement>', but here has type 'DetailedHTMLProps<AnchorHTMLAttributes<HTMLAnchorElement>, HTMLAnchorElement>'.
+
+3090             a: React.DetailedHTMLProps<React.AnchorHTMLAttributes<HTMLAnchorElement>, HTMLAnchorElement>;
+                 ~
+
+  ../node_modules/@types/react/index.d.ts:3146:13
+    3146             a: React.DetailedHTMLProps<React.AnchorHTMLAttributes<HTMLAnchorElement>, HTMLAnchorElement>;
+                     ~
+    'a' was also declared here.
+
+node_modules/@types/react/index.d.ts:3091:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'abbr' must be of type 'DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement>', but here has type 'DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement>'.
+
+3091             abbr: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+                 ~~~~
+
+  ../node_modules/@types/react/index.d.ts:3147:13
+    3147             abbr: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+                     ~~~~
+    'abbr' was also declared here.
+
+node_modules/@types/react/index.d.ts:3092:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'address' must be of type 'DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement>', but here has type 'DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement>'.
+
+3092             address: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+                 ~~~~~~~
+
+  ../node_modules/@types/react/index.d.ts:3148:13
+    3148             address: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+                     ~~~~~~~
+    'address' was also declared here.
+
+node_modules/@types/react/index.d.ts:3093:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'area' must be of type 'DetailedHTMLProps<AreaHTMLAttributes<HTMLAreaElement>, HTMLAreaElement>', but here has type 'DetailedHTMLProps<AreaHTMLAttributes<HTMLAreaElement>, HTMLAreaElement>'.
+
+3093             area: React.DetailedHTMLProps<React.AreaHTMLAttributes<HTMLAreaElement>, HTMLAreaElement>;
+                 ~~~~
+
+  ../node_modules/@types/react/index.d.ts:3149:13
+    3149             area: React.DetailedHTMLProps<React.AreaHTMLAttributes<HTMLAreaElement>, HTMLAreaElement>;
+                     ~~~~
+    'area' was also declared here.
+
+node_modules/@types/react/index.d.ts:3094:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'article' must be of type 'DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement>', but here has type 'DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement>'.
+
+3094             article: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+                 ~~~~~~~
+
+  ../node_modules/@types/react/index.d.ts:3150:13
+    3150             article: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+                     ~~~~~~~
+    'article' was also declared here.
+
+node_modules/@types/react/index.d.ts:3095:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'aside' must be of type 'DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement>', but here has type 'DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement>'.
+
+3095             aside: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+                 ~~~~~
+
+  ../node_modules/@types/react/index.d.ts:3151:13
+    3151             aside: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+                     ~~~~~
+    'aside' was also declared here.
+
+node_modules/@types/react/index.d.ts:3096:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'audio' must be of type 'DetailedHTMLProps<AudioHTMLAttributes<HTMLAudioElement>, HTMLAudioElement>', but here has type 'DetailedHTMLProps<AudioHTMLAttributes<HTMLAudioElement>, HTMLAudioElement>'.
+
+3096             audio: React.DetailedHTMLProps<React.AudioHTMLAttributes<HTMLAudioElement>, HTMLAudioElement>;
+                 ~~~~~
+
+  ../node_modules/@types/react/index.d.ts:3152:13
+    3152             audio: React.DetailedHTMLProps<React.AudioHTMLAttributes<HTMLAudioElement>, HTMLAudioElement>;
+                     ~~~~~
+    'audio' was also declared here.
+
+node_modules/@types/react/index.d.ts:3097:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'b' must be of type 'DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement>', but here has type 'DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement>'.
+
+3097             b: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+                 ~
+
+  ../node_modules/@types/react/index.d.ts:3153:13
+    3153             b: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+                     ~
+    'b' was also declared here.
+
+node_modules/@types/react/index.d.ts:3098:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'base' must be of type 'DetailedHTMLProps<BaseHTMLAttributes<HTMLBaseElement>, HTMLBaseElement>', but here has type 'DetailedHTMLProps<BaseHTMLAttributes<HTMLBaseElement>, HTMLBaseElement>'.
+
+3098             base: React.DetailedHTMLProps<React.BaseHTMLAttributes<HTMLBaseElement>, HTMLBaseElement>;
+                 ~~~~
+
+  ../node_modules/@types/react/index.d.ts:3154:13
+    3154             base: React.DetailedHTMLProps<React.BaseHTMLAttributes<HTMLBaseElement>, HTMLBaseElement>;
+                     ~~~~
+    'base' was also declared here.
+
+node_modules/@types/react/index.d.ts:3099:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'bdi' must be of type 'DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement>', but here has type 'DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement>'.
+
+3099             bdi: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+                 ~~~
+
+  ../node_modules/@types/react/index.d.ts:3155:13
+    3155             bdi: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+                     ~~~
+    'bdi' was also declared here.
+
+node_modules/@types/react/index.d.ts:3100:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'bdo' must be of type 'DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement>', but here has type 'DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement>'.
+
+3100             bdo: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+                 ~~~
+
+  ../node_modules/@types/react/index.d.ts:3156:13
+    3156             bdo: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+                     ~~~
+    'bdo' was also declared here.
+
+node_modules/@types/react/index.d.ts:3101:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'big' must be of type 'DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement>', but here has type 'DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement>'.
+
+3101             big: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+                 ~~~
+
+  ../node_modules/@types/react/index.d.ts:3157:13
+    3157             big: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+                     ~~~
+    'big' was also declared here.
+
+node_modules/@types/react/index.d.ts:3102:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'blockquote' must be of type 'DetailedHTMLProps<BlockquoteHTMLAttributes<HTMLQuoteElement>, HTMLQuoteElement>', but here has type 'DetailedHTMLProps<BlockquoteHTMLAttributes<HTMLQuoteElement>, HTMLQuoteElement>'.
+
+3102             blockquote: React.DetailedHTMLProps<React.BlockquoteHTMLAttributes<HTMLQuoteElement>, HTMLQuoteElement>;
+                 ~~~~~~~~~~
+
+  ../node_modules/@types/react/index.d.ts:3158:13
+    3158             blockquote: React.DetailedHTMLProps<React.BlockquoteHTMLAttributes<HTMLQuoteElement>, HTMLQuoteElement>;
+                     ~~~~~~~~~~
+    'blockquote' was also declared here.
+
+node_modules/@types/react/index.d.ts:3103:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'body' must be of type 'DetailedHTMLProps<HTMLAttributes<HTMLBodyElement>, HTMLBodyElement>', but here has type 'DetailedHTMLProps<HTMLAttributes<HTMLBodyElement>, HTMLBodyElement>'.
+
+3103             body: React.DetailedHTMLProps<React.HTMLAttributes<HTMLBodyElement>, HTMLBodyElement>;
+                 ~~~~
+
+  ../node_modules/@types/react/index.d.ts:3159:13
+    3159             body: React.DetailedHTMLProps<React.HTMLAttributes<HTMLBodyElement>, HTMLBodyElement>;
+                     ~~~~
+    'body' was also declared here.
+
+node_modules/@types/react/index.d.ts:3104:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'br' must be of type 'DetailedHTMLProps<HTMLAttributes<HTMLBRElement>, HTMLBRElement>', but here has type 'DetailedHTMLProps<HTMLAttributes<HTMLBRElement>, HTMLBRElement>'.
+
+3104             br: React.DetailedHTMLProps<React.HTMLAttributes<HTMLBRElement>, HTMLBRElement>;
+                 ~~
+
+  ../node_modules/@types/react/index.d.ts:3160:13
+    3160             br: React.DetailedHTMLProps<React.HTMLAttributes<HTMLBRElement>, HTMLBRElement>;
+                     ~~
+    'br' was also declared here.
+
+node_modules/@types/react/index.d.ts:3105:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'button' must be of type 'DetailedHTMLProps<ButtonHTMLAttributes<HTMLButtonElement>, HTMLButtonElement>', but here has type 'DetailedHTMLProps<ButtonHTMLAttributes<HTMLButtonElement>, HTMLButtonElement>'.
+
+3105             button: React.DetailedHTMLProps<React.ButtonHTMLAttributes<HTMLButtonElement>, HTMLButtonElement>;
+                 ~~~~~~
+
+  ../node_modules/@types/react/index.d.ts:3161:13
+    3161             button: React.DetailedHTMLProps<React.ButtonHTMLAttributes<HTMLButtonElement>, HTMLButtonElement>;
+                     ~~~~~~
+    'button' was also declared here.
+
+node_modules/@types/react/index.d.ts:3106:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'canvas' must be of type 'DetailedHTMLProps<CanvasHTMLAttributes<HTMLCanvasElement>, HTMLCanvasElement>', but here has type 'DetailedHTMLProps<CanvasHTMLAttributes<HTMLCanvasElement>, HTMLCanvasElement>'.
+
+3106             canvas: React.DetailedHTMLProps<React.CanvasHTMLAttributes<HTMLCanvasElement>, HTMLCanvasElement>;
+                 ~~~~~~
+
+  ../node_modules/@types/react/index.d.ts:3162:13
+    3162             canvas: React.DetailedHTMLProps<React.CanvasHTMLAttributes<HTMLCanvasElement>, HTMLCanvasElement>;
+                     ~~~~~~
+    'canvas' was also declared here.
+
+node_modules/@types/react/index.d.ts:3107:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'caption' must be of type 'DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement>', but here has type 'DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement>'.
+
+3107             caption: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+                 ~~~~~~~
+
+  ../node_modules/@types/react/index.d.ts:3163:13
+    3163             caption: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+                     ~~~~~~~
+    'caption' was also declared here.
+
+node_modules/@types/react/index.d.ts:3108:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'cite' must be of type 'DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement>', but here has type 'DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement>'.
+
+3108             cite: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+                 ~~~~
+
+  ../node_modules/@types/react/index.d.ts:3165:13
+    3165             cite: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+                     ~~~~
+    'cite' was also declared here.
+
+node_modules/@types/react/index.d.ts:3109:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'code' must be of type 'DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement>', but here has type 'DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement>'.
+
+3109             code: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+                 ~~~~
+
+  ../node_modules/@types/react/index.d.ts:3166:13
+    3166             code: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+                     ~~~~
+    'code' was also declared here.
+
+node_modules/@types/react/index.d.ts:3110:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'col' must be of type 'DetailedHTMLProps<ColHTMLAttributes<HTMLTableColElement>, HTMLTableColElement>', but here has type 'DetailedHTMLProps<ColHTMLAttributes<HTMLTableColElement>, HTMLTableColElement>'.
+
+3110             col: React.DetailedHTMLProps<React.ColHTMLAttributes<HTMLTableColElement>, HTMLTableColElement>;
+                 ~~~
+
+  ../node_modules/@types/react/index.d.ts:3167:13
+    3167             col: React.DetailedHTMLProps<React.ColHTMLAttributes<HTMLTableColElement>, HTMLTableColElement>;
+                     ~~~
+    'col' was also declared here.
+
+node_modules/@types/react/index.d.ts:3111:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'colgroup' must be of type 'DetailedHTMLProps<ColgroupHTMLAttributes<HTMLTableColElement>, HTMLTableColElement>', but here has type 'DetailedHTMLProps<ColgroupHTMLAttributes<HTMLTableColElement>, HTMLTableColElement>'.
+
+3111             colgroup: React.DetailedHTMLProps<React.ColgroupHTMLAttributes<HTMLTableColElement>, HTMLTableColElement>;
+                 ~~~~~~~~
+
+  ../node_modules/@types/react/index.d.ts:3168:13
+    3168             colgroup: React.DetailedHTMLProps<React.ColgroupHTMLAttributes<HTMLTableColElement>, HTMLTableColElement>;
+                     ~~~~~~~~
+    'colgroup' was also declared here.
+
+node_modules/@types/react/index.d.ts:3112:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'data' must be of type 'DetailedHTMLProps<DataHTMLAttributes<HTMLDataElement>, HTMLDataElement>', but here has type 'DetailedHTMLProps<DataHTMLAttributes<HTMLDataElement>, HTMLDataElement>'.
+
+3112             data: React.DetailedHTMLProps<React.DataHTMLAttributes<HTMLDataElement>, HTMLDataElement>;
+                 ~~~~
+
+  ../node_modules/@types/react/index.d.ts:3169:13
+    3169             data: React.DetailedHTMLProps<React.DataHTMLAttributes<HTMLDataElement>, HTMLDataElement>;
+                     ~~~~
+    'data' was also declared here.
+
+node_modules/@types/react/index.d.ts:3113:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'datalist' must be of type 'DetailedHTMLProps<HTMLAttributes<HTMLDataListElement>, HTMLDataListElement>', but here has type 'DetailedHTMLProps<HTMLAttributes<HTMLDataListElement>, HTMLDataListElement>'.
+
+3113             datalist: React.DetailedHTMLProps<React.HTMLAttributes<HTMLDataListElement>, HTMLDataListElement>;
+                 ~~~~~~~~
+
+  ../node_modules/@types/react/index.d.ts:3170:13
+    3170             datalist: React.DetailedHTMLProps<React.HTMLAttributes<HTMLDataListElement>, HTMLDataListElement>;
+                     ~~~~~~~~
+    'datalist' was also declared here.
+
+node_modules/@types/react/index.d.ts:3114:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'dd' must be of type 'DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement>', but here has type 'DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement>'.
+
+3114             dd: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+                 ~~
+
+  ../node_modules/@types/react/index.d.ts:3171:13
+    3171             dd: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+                     ~~
+    'dd' was also declared here.
+
+node_modules/@types/react/index.d.ts:3115:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'del' must be of type 'DetailedHTMLProps<DelHTMLAttributes<HTMLModElement>, HTMLModElement>', but here has type 'DetailedHTMLProps<DelHTMLAttributes<HTMLModElement>, HTMLModElement>'.
+
+3115             del: React.DetailedHTMLProps<React.DelHTMLAttributes<HTMLModElement>, HTMLModElement>;
+                 ~~~
+
+  ../node_modules/@types/react/index.d.ts:3172:13
+    3172             del: React.DetailedHTMLProps<React.DelHTMLAttributes<HTMLModElement>, HTMLModElement>;
+                     ~~~
+    'del' was also declared here.
+
+node_modules/@types/react/index.d.ts:3116:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'details' must be of type 'DetailedHTMLProps<DetailsHTMLAttributes<HTMLDetailsElement>, HTMLDetailsElement>', but here has type 'DetailedHTMLProps<DetailsHTMLAttributes<HTMLDetailsElement>, HTMLDetailsElement>'.
+
+3116             details: React.DetailedHTMLProps<React.DetailsHTMLAttributes<HTMLDetailsElement>, HTMLDetailsElement>;
+                 ~~~~~~~
+
+  ../node_modules/@types/react/index.d.ts:3173:13
+    3173             details: React.DetailedHTMLProps<React.DetailsHTMLAttributes<HTMLDetailsElement>, HTMLDetailsElement>;
+                     ~~~~~~~
+    'details' was also declared here.
+
+node_modules/@types/react/index.d.ts:3117:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'dfn' must be of type 'DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement>', but here has type 'DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement>'.
+
+3117             dfn: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+                 ~~~
+
+  ../node_modules/@types/react/index.d.ts:3174:13
+    3174             dfn: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+                     ~~~
+    'dfn' was also declared here.
+
+node_modules/@types/react/index.d.ts:3118:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'dialog' must be of type 'DetailedHTMLProps<DialogHTMLAttributes<HTMLDialogElement>, HTMLDialogElement>', but here has type 'DetailedHTMLProps<DialogHTMLAttributes<HTMLDialogElement>, HTMLDialogElement>'.
+
+3118             dialog: React.DetailedHTMLProps<React.DialogHTMLAttributes<HTMLDialogElement>, HTMLDialogElement>;
+                 ~~~~~~
+
+  ../node_modules/@types/react/index.d.ts:3175:13
+    3175             dialog: React.DetailedHTMLProps<React.DialogHTMLAttributes<HTMLDialogElement>, HTMLDialogElement>;
+                     ~~~~~~
+    'dialog' was also declared here.
+
+node_modules/@types/react/index.d.ts:3119:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'div' must be of type 'DetailedHTMLProps<HTMLAttributes<HTMLDivElement>, HTMLDivElement>', but here has type 'DetailedHTMLProps<HTMLAttributes<HTMLDivElement>, HTMLDivElement>'.
+
+3119             div: React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement>;
+                 ~~~
+
+  ../node_modules/@types/react/index.d.ts:3176:13
+    3176             div: React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement>;
+                     ~~~
+    'div' was also declared here.
+
+node_modules/@types/react/index.d.ts:3120:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'dl' must be of type 'DetailedHTMLProps<HTMLAttributes<HTMLDListElement>, HTMLDListElement>', but here has type 'DetailedHTMLProps<HTMLAttributes<HTMLDListElement>, HTMLDListElement>'.
+
+3120             dl: React.DetailedHTMLProps<React.HTMLAttributes<HTMLDListElement>, HTMLDListElement>;
+                 ~~
+
+  ../node_modules/@types/react/index.d.ts:3177:13
+    3177             dl: React.DetailedHTMLProps<React.HTMLAttributes<HTMLDListElement>, HTMLDListElement>;
+                     ~~
+    'dl' was also declared here.
+
+node_modules/@types/react/index.d.ts:3121:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'dt' must be of type 'DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement>', but here has type 'DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement>'.
+
+3121             dt: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+                 ~~
+
+  ../node_modules/@types/react/index.d.ts:3178:13
+    3178             dt: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+                     ~~
+    'dt' was also declared here.
+
+node_modules/@types/react/index.d.ts:3122:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'em' must be of type 'DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement>', but here has type 'DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement>'.
+
+3122             em: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+                 ~~
+
+  ../node_modules/@types/react/index.d.ts:3179:13
+    3179             em: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+                     ~~
+    'em' was also declared here.
+
+node_modules/@types/react/index.d.ts:3123:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'embed' must be of type 'DetailedHTMLProps<EmbedHTMLAttributes<HTMLEmbedElement>, HTMLEmbedElement>', but here has type 'DetailedHTMLProps<EmbedHTMLAttributes<HTMLEmbedElement>, HTMLEmbedElement>'.
+
+3123             embed: React.DetailedHTMLProps<React.EmbedHTMLAttributes<HTMLEmbedElement>, HTMLEmbedElement>;
+                 ~~~~~
+
+  ../node_modules/@types/react/index.d.ts:3180:13
+    3180             embed: React.DetailedHTMLProps<React.EmbedHTMLAttributes<HTMLEmbedElement>, HTMLEmbedElement>;
+                     ~~~~~
+    'embed' was also declared here.
+
+node_modules/@types/react/index.d.ts:3124:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'fieldset' must be of type 'DetailedHTMLProps<FieldsetHTMLAttributes<HTMLFieldSetElement>, HTMLFieldSetElement>', but here has type 'DetailedHTMLProps<FieldsetHTMLAttributes<HTMLFieldSetElement>, HTMLFieldSetElement>'.
+
+3124             fieldset: React.DetailedHTMLProps<React.FieldsetHTMLAttributes<HTMLFieldSetElement>, HTMLFieldSetElement>;
+                 ~~~~~~~~
+
+  ../node_modules/@types/react/index.d.ts:3181:13
+    3181             fieldset: React.DetailedHTMLProps<React.FieldsetHTMLAttributes<HTMLFieldSetElement>, HTMLFieldSetElement>;
+                     ~~~~~~~~
+    'fieldset' was also declared here.
+
+node_modules/@types/react/index.d.ts:3125:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'figcaption' must be of type 'DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement>', but here has type 'DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement>'.
+
+3125             figcaption: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+                 ~~~~~~~~~~
+
+  ../node_modules/@types/react/index.d.ts:3182:13
+    3182             figcaption: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+                     ~~~~~~~~~~
+    'figcaption' was also declared here.
+
+node_modules/@types/react/index.d.ts:3126:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'figure' must be of type 'DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement>', but here has type 'DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement>'.
+
+3126             figure: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+                 ~~~~~~
+
+  ../node_modules/@types/react/index.d.ts:3183:13
+    3183             figure: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+                     ~~~~~~
+    'figure' was also declared here.
+
+node_modules/@types/react/index.d.ts:3127:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'footer' must be of type 'DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement>', but here has type 'DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement>'.
+
+3127             footer: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+                 ~~~~~~
+
+  ../node_modules/@types/react/index.d.ts:3184:13
+    3184             footer: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+                     ~~~~~~
+    'footer' was also declared here.
+
+node_modules/@types/react/index.d.ts:3128:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'form' must be of type 'DetailedHTMLProps<FormHTMLAttributes<HTMLFormElement>, HTMLFormElement>', but here has type 'DetailedHTMLProps<FormHTMLAttributes<HTMLFormElement>, HTMLFormElement>'.
+
+3128             form: React.DetailedHTMLProps<React.FormHTMLAttributes<HTMLFormElement>, HTMLFormElement>;
+                 ~~~~
+
+  ../node_modules/@types/react/index.d.ts:3185:13
+    3185             form: React.DetailedHTMLProps<React.FormHTMLAttributes<HTMLFormElement>, HTMLFormElement>;
+                     ~~~~
+    'form' was also declared here.
+
+node_modules/@types/react/index.d.ts:3129:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'h1' must be of type 'DetailedHTMLProps<HTMLAttributes<HTMLHeadingElement>, HTMLHeadingElement>', but here has type 'DetailedHTMLProps<HTMLAttributes<HTMLHeadingElement>, HTMLHeadingElement>'.
+
+3129             h1: React.DetailedHTMLProps<React.HTMLAttributes<HTMLHeadingElement>, HTMLHeadingElement>;
+                 ~~
+
+  ../node_modules/@types/react/index.d.ts:3186:13
+    3186             h1: React.DetailedHTMLProps<React.HTMLAttributes<HTMLHeadingElement>, HTMLHeadingElement>;
+                     ~~
+    'h1' was also declared here.
+
+node_modules/@types/react/index.d.ts:3130:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'h2' must be of type 'DetailedHTMLProps<HTMLAttributes<HTMLHeadingElement>, HTMLHeadingElement>', but here has type 'DetailedHTMLProps<HTMLAttributes<HTMLHeadingElement>, HTMLHeadingElement>'.
+
+3130             h2: React.DetailedHTMLProps<React.HTMLAttributes<HTMLHeadingElement>, HTMLHeadingElement>;
+                 ~~
+
+  ../node_modules/@types/react/index.d.ts:3187:13
+    3187             h2: React.DetailedHTMLProps<React.HTMLAttributes<HTMLHeadingElement>, HTMLHeadingElement>;
+                     ~~
+    'h2' was also declared here.
+
+node_modules/@types/react/index.d.ts:3131:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'h3' must be of type 'DetailedHTMLProps<HTMLAttributes<HTMLHeadingElement>, HTMLHeadingElement>', but here has type 'DetailedHTMLProps<HTMLAttributes<HTMLHeadingElement>, HTMLHeadingElement>'.
+
+3131             h3: React.DetailedHTMLProps<React.HTMLAttributes<HTMLHeadingElement>, HTMLHeadingElement>;
+                 ~~
+
+  ../node_modules/@types/react/index.d.ts:3188:13
+    3188             h3: React.DetailedHTMLProps<React.HTMLAttributes<HTMLHeadingElement>, HTMLHeadingElement>;
+                     ~~
+    'h3' was also declared here.
+
+node_modules/@types/react/index.d.ts:3132:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'h4' must be of type 'DetailedHTMLProps<HTMLAttributes<HTMLHeadingElement>, HTMLHeadingElement>', but here has type 'DetailedHTMLProps<HTMLAttributes<HTMLHeadingElement>, HTMLHeadingElement>'.
+
+3132             h4: React.DetailedHTMLProps<React.HTMLAttributes<HTMLHeadingElement>, HTMLHeadingElement>;
+                 ~~
+
+  ../node_modules/@types/react/index.d.ts:3189:13
+    3189             h4: React.DetailedHTMLProps<React.HTMLAttributes<HTMLHeadingElement>, HTMLHeadingElement>;
+                     ~~
+    'h4' was also declared here.
+
+node_modules/@types/react/index.d.ts:3133:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'h5' must be of type 'DetailedHTMLProps<HTMLAttributes<HTMLHeadingElement>, HTMLHeadingElement>', but here has type 'DetailedHTMLProps<HTMLAttributes<HTMLHeadingElement>, HTMLHeadingElement>'.
+
+3133             h5: React.DetailedHTMLProps<React.HTMLAttributes<HTMLHeadingElement>, HTMLHeadingElement>;
+                 ~~
+
+  ../node_modules/@types/react/index.d.ts:3190:13
+    3190             h5: React.DetailedHTMLProps<React.HTMLAttributes<HTMLHeadingElement>, HTMLHeadingElement>;
+                     ~~
+    'h5' was also declared here.
+
+node_modules/@types/react/index.d.ts:3134:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'h6' must be of type 'DetailedHTMLProps<HTMLAttributes<HTMLHeadingElement>, HTMLHeadingElement>', but here has type 'DetailedHTMLProps<HTMLAttributes<HTMLHeadingElement>, HTMLHeadingElement>'.
+
+3134             h6: React.DetailedHTMLProps<React.HTMLAttributes<HTMLHeadingElement>, HTMLHeadingElement>;
+                 ~~
+
+  ../node_modules/@types/react/index.d.ts:3191:13
+    3191             h6: React.DetailedHTMLProps<React.HTMLAttributes<HTMLHeadingElement>, HTMLHeadingElement>;
+                     ~~
+    'h6' was also declared here.
+
+node_modules/@types/react/index.d.ts:3135:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'head' must be of type 'DetailedHTMLProps<HTMLAttributes<HTMLHeadElement>, HTMLHeadElement>', but here has type 'DetailedHTMLProps<HTMLAttributes<HTMLHeadElement>, HTMLHeadElement>'.
+
+3135             head: React.DetailedHTMLProps<React.HTMLAttributes<HTMLHeadElement>, HTMLHeadElement>;
+                 ~~~~
+
+  ../node_modules/@types/react/index.d.ts:3192:13
+    3192             head: React.DetailedHTMLProps<React.HTMLAttributes<HTMLHeadElement>, HTMLHeadElement>;
+                     ~~~~
+    'head' was also declared here.
+
+node_modules/@types/react/index.d.ts:3136:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'header' must be of type 'DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement>', but here has type 'DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement>'.
+
+3136             header: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+                 ~~~~~~
+
+  ../node_modules/@types/react/index.d.ts:3193:13
+    3193             header: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+                     ~~~~~~
+    'header' was also declared here.
+
+node_modules/@types/react/index.d.ts:3137:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'hgroup' must be of type 'DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement>', but here has type 'DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement>'.
+
+3137             hgroup: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+                 ~~~~~~
+
+  ../node_modules/@types/react/index.d.ts:3194:13
+    3194             hgroup: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+                     ~~~~~~
+    'hgroup' was also declared here.
+
+node_modules/@types/react/index.d.ts:3138:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'hr' must be of type 'DetailedHTMLProps<HTMLAttributes<HTMLHRElement>, HTMLHRElement>', but here has type 'DetailedHTMLProps<HTMLAttributes<HTMLHRElement>, HTMLHRElement>'.
+
+3138             hr: React.DetailedHTMLProps<React.HTMLAttributes<HTMLHRElement>, HTMLHRElement>;
+                 ~~
+
+  ../node_modules/@types/react/index.d.ts:3195:13
+    3195             hr: React.DetailedHTMLProps<React.HTMLAttributes<HTMLHRElement>, HTMLHRElement>;
+                     ~~
+    'hr' was also declared here.
+
+node_modules/@types/react/index.d.ts:3139:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'html' must be of type 'DetailedHTMLProps<HtmlHTMLAttributes<HTMLHtmlElement>, HTMLHtmlElement>', but here has type 'DetailedHTMLProps<HtmlHTMLAttributes<HTMLHtmlElement>, HTMLHtmlElement>'.
+
+3139             html: React.DetailedHTMLProps<React.HtmlHTMLAttributes<HTMLHtmlElement>, HTMLHtmlElement>;
+                 ~~~~
+
+  ../node_modules/@types/react/index.d.ts:3196:13
+    3196             html: React.DetailedHTMLProps<React.HtmlHTMLAttributes<HTMLHtmlElement>, HTMLHtmlElement>;
+                     ~~~~
+    'html' was also declared here.
+
+node_modules/@types/react/index.d.ts:3140:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'i' must be of type 'DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement>', but here has type 'DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement>'.
+
+3140             i: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+                 ~
+
+  ../node_modules/@types/react/index.d.ts:3197:13
+    3197             i: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+                     ~
+    'i' was also declared here.
+
+node_modules/@types/react/index.d.ts:3141:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'iframe' must be of type 'DetailedHTMLProps<IframeHTMLAttributes<HTMLIFrameElement>, HTMLIFrameElement>', but here has type 'DetailedHTMLProps<IframeHTMLAttributes<HTMLIFrameElement>, HTMLIFrameElement>'.
+
+3141             iframe: React.DetailedHTMLProps<React.IframeHTMLAttributes<HTMLIFrameElement>, HTMLIFrameElement>;
+                 ~~~~~~
+
+  ../node_modules/@types/react/index.d.ts:3198:13
+    3198             iframe: React.DetailedHTMLProps<React.IframeHTMLAttributes<HTMLIFrameElement>, HTMLIFrameElement>;
+                     ~~~~~~
+    'iframe' was also declared here.
+
+node_modules/@types/react/index.d.ts:3142:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'img' must be of type 'DetailedHTMLProps<ImgHTMLAttributes<HTMLImageElement>, HTMLImageElement>', but here has type 'DetailedHTMLProps<ImgHTMLAttributes<HTMLImageElement>, HTMLImageElement>'.
+
+3142             img: React.DetailedHTMLProps<React.ImgHTMLAttributes<HTMLImageElement>, HTMLImageElement>;
+                 ~~~
+
+  ../node_modules/@types/react/index.d.ts:3199:13
+    3199             img: React.DetailedHTMLProps<React.ImgHTMLAttributes<HTMLImageElement>, HTMLImageElement>;
+                     ~~~
+    'img' was also declared here.
+
+node_modules/@types/react/index.d.ts:3143:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'input' must be of type 'DetailedHTMLProps<InputHTMLAttributes<HTMLInputElement>, HTMLInputElement>', but here has type 'DetailedHTMLProps<InputHTMLAttributes<HTMLInputElement>, HTMLInputElement>'.
+
+3143             input: React.DetailedHTMLProps<React.InputHTMLAttributes<HTMLInputElement>, HTMLInputElement>;
+                 ~~~~~
+
+  ../node_modules/@types/react/index.d.ts:3200:13
+    3200             input: React.DetailedHTMLProps<React.InputHTMLAttributes<HTMLInputElement>, HTMLInputElement>;
+                     ~~~~~
+    'input' was also declared here.
+
+node_modules/@types/react/index.d.ts:3144:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'ins' must be of type 'DetailedHTMLProps<InsHTMLAttributes<HTMLModElement>, HTMLModElement>', but here has type 'DetailedHTMLProps<InsHTMLAttributes<HTMLModElement>, HTMLModElement>'.
+
+3144             ins: React.DetailedHTMLProps<React.InsHTMLAttributes<HTMLModElement>, HTMLModElement>;
+                 ~~~
+
+  ../node_modules/@types/react/index.d.ts:3201:13
+    3201             ins: React.DetailedHTMLProps<React.InsHTMLAttributes<HTMLModElement>, HTMLModElement>;
+                     ~~~
+    'ins' was also declared here.
+
+node_modules/@types/react/index.d.ts:3145:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'kbd' must be of type 'DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement>', but here has type 'DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement>'.
+
+3145             kbd: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+                 ~~~
+
+  ../node_modules/@types/react/index.d.ts:3202:13
+    3202             kbd: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+                     ~~~
+    'kbd' was also declared here.
+
+node_modules/@types/react/index.d.ts:3146:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'keygen' must be of type 'DetailedHTMLProps<KeygenHTMLAttributes<HTMLElement>, HTMLElement>', but here has type 'DetailedHTMLProps<KeygenHTMLAttributes<HTMLElement>, HTMLElement>'.
+
+3146             keygen: React.DetailedHTMLProps<React.KeygenHTMLAttributes<HTMLElement>, HTMLElement>;
+                 ~~~~~~
+
+  ../node_modules/@types/react/index.d.ts:3203:13
+    3203             keygen: React.DetailedHTMLProps<React.KeygenHTMLAttributes<HTMLElement>, HTMLElement>;
+                     ~~~~~~
+    'keygen' was also declared here.
+
+node_modules/@types/react/index.d.ts:3147:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'label' must be of type 'DetailedHTMLProps<LabelHTMLAttributes<HTMLLabelElement>, HTMLLabelElement>', but here has type 'DetailedHTMLProps<LabelHTMLAttributes<HTMLLabelElement>, HTMLLabelElement>'.
+
+3147             label: React.DetailedHTMLProps<React.LabelHTMLAttributes<HTMLLabelElement>, HTMLLabelElement>;
+                 ~~~~~
+
+  ../node_modules/@types/react/index.d.ts:3204:13
+    3204             label: React.DetailedHTMLProps<React.LabelHTMLAttributes<HTMLLabelElement>, HTMLLabelElement>;
+                     ~~~~~
+    'label' was also declared here.
+
+node_modules/@types/react/index.d.ts:3148:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'legend' must be of type 'DetailedHTMLProps<HTMLAttributes<HTMLLegendElement>, HTMLLegendElement>', but here has type 'DetailedHTMLProps<HTMLAttributes<HTMLLegendElement>, HTMLLegendElement>'.
+
+3148             legend: React.DetailedHTMLProps<React.HTMLAttributes<HTMLLegendElement>, HTMLLegendElement>;
+                 ~~~~~~
+
+  ../node_modules/@types/react/index.d.ts:3205:13
+    3205             legend: React.DetailedHTMLProps<React.HTMLAttributes<HTMLLegendElement>, HTMLLegendElement>;
+                     ~~~~~~
+    'legend' was also declared here.
+
+node_modules/@types/react/index.d.ts:3149:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'li' must be of type 'DetailedHTMLProps<LiHTMLAttributes<HTMLLIElement>, HTMLLIElement>', but here has type 'DetailedHTMLProps<LiHTMLAttributes<HTMLLIElement>, HTMLLIElement>'.
+
+3149             li: React.DetailedHTMLProps<React.LiHTMLAttributes<HTMLLIElement>, HTMLLIElement>;
+                 ~~
+
+  ../node_modules/@types/react/index.d.ts:3206:13
+    3206             li: React.DetailedHTMLProps<React.LiHTMLAttributes<HTMLLIElement>, HTMLLIElement>;
+                     ~~
+    'li' was also declared here.
+
+node_modules/@types/react/index.d.ts:3150:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'link' must be of type 'DetailedHTMLProps<LinkHTMLAttributes<HTMLLinkElement>, HTMLLinkElement>', but here has type 'DetailedHTMLProps<LinkHTMLAttributes<HTMLLinkElement>, HTMLLinkElement>'.
+
+3150             link: React.DetailedHTMLProps<React.LinkHTMLAttributes<HTMLLinkElement>, HTMLLinkElement>;
+                 ~~~~
+
+  ../node_modules/@types/react/index.d.ts:3207:13
+    3207             link: React.DetailedHTMLProps<React.LinkHTMLAttributes<HTMLLinkElement>, HTMLLinkElement>;
+                     ~~~~
+    'link' was also declared here.
+
+node_modules/@types/react/index.d.ts:3151:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'main' must be of type 'DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement>', but here has type 'DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement>'.
+
+3151             main: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+                 ~~~~
+
+  ../node_modules/@types/react/index.d.ts:3208:13
+    3208             main: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+                     ~~~~
+    'main' was also declared here.
+
+node_modules/@types/react/index.d.ts:3152:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'map' must be of type 'DetailedHTMLProps<MapHTMLAttributes<HTMLMapElement>, HTMLMapElement>', but here has type 'DetailedHTMLProps<MapHTMLAttributes<HTMLMapElement>, HTMLMapElement>'.
+
+3152             map: React.DetailedHTMLProps<React.MapHTMLAttributes<HTMLMapElement>, HTMLMapElement>;
+                 ~~~
+
+  ../node_modules/@types/react/index.d.ts:3209:13
+    3209             map: React.DetailedHTMLProps<React.MapHTMLAttributes<HTMLMapElement>, HTMLMapElement>;
+                     ~~~
+    'map' was also declared here.
+
+node_modules/@types/react/index.d.ts:3153:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'mark' must be of type 'DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement>', but here has type 'DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement>'.
+
+3153             mark: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+                 ~~~~
+
+  ../node_modules/@types/react/index.d.ts:3210:13
+    3210             mark: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+                     ~~~~
+    'mark' was also declared here.
+
+node_modules/@types/react/index.d.ts:3154:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'menu' must be of type 'DetailedHTMLProps<MenuHTMLAttributes<HTMLElement>, HTMLElement>', but here has type 'DetailedHTMLProps<MenuHTMLAttributes<HTMLElement>, HTMLElement>'.
+
+3154             menu: React.DetailedHTMLProps<React.MenuHTMLAttributes<HTMLElement>, HTMLElement>;
+                 ~~~~
+
+  ../node_modules/@types/react/index.d.ts:3211:13
+    3211             menu: React.DetailedHTMLProps<React.MenuHTMLAttributes<HTMLElement>, HTMLElement>;
+                     ~~~~
+    'menu' was also declared here.
+
+node_modules/@types/react/index.d.ts:3155:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'menuitem' must be of type 'DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement>', but here has type 'DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement>'.
+
+3155             menuitem: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+                 ~~~~~~~~
+
+  ../node_modules/@types/react/index.d.ts:3212:13
+    3212             menuitem: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+                     ~~~~~~~~
+    'menuitem' was also declared here.
+
+node_modules/@types/react/index.d.ts:3156:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'meta' must be of type 'DetailedHTMLProps<MetaHTMLAttributes<HTMLMetaElement>, HTMLMetaElement>', but here has type 'DetailedHTMLProps<MetaHTMLAttributes<HTMLMetaElement>, HTMLMetaElement>'.
+
+3156             meta: React.DetailedHTMLProps<React.MetaHTMLAttributes<HTMLMetaElement>, HTMLMetaElement>;
+                 ~~~~
+
+  ../node_modules/@types/react/index.d.ts:3213:13
+    3213             meta: React.DetailedHTMLProps<React.MetaHTMLAttributes<HTMLMetaElement>, HTMLMetaElement>;
+                     ~~~~
+    'meta' was also declared here.
+
+node_modules/@types/react/index.d.ts:3157:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'meter' must be of type 'DetailedHTMLProps<MeterHTMLAttributes<HTMLMeterElement>, HTMLMeterElement>', but here has type 'DetailedHTMLProps<MeterHTMLAttributes<HTMLMeterElement>, HTMLMeterElement>'.
+
+3157             meter: React.DetailedHTMLProps<React.MeterHTMLAttributes<HTMLMeterElement>, HTMLMeterElement>;
+                 ~~~~~
+
+  ../node_modules/@types/react/index.d.ts:3214:13
+    3214             meter: React.DetailedHTMLProps<React.MeterHTMLAttributes<HTMLMeterElement>, HTMLMeterElement>;
+                     ~~~~~
+    'meter' was also declared here.
+
+node_modules/@types/react/index.d.ts:3158:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'nav' must be of type 'DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement>', but here has type 'DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement>'.
+
+3158             nav: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+                 ~~~
+
+  ../node_modules/@types/react/index.d.ts:3215:13
+    3215             nav: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+                     ~~~
+    'nav' was also declared here.
+
+node_modules/@types/react/index.d.ts:3159:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'noindex' must be of type 'DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement>', but here has type 'DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement>'.
+
+3159             noindex: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+                 ~~~~~~~
+
+  ../node_modules/@types/react/index.d.ts:3216:13
+    3216             noindex: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+                     ~~~~~~~
+    'noindex' was also declared here.
+
+node_modules/@types/react/index.d.ts:3160:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'noscript' must be of type 'DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement>', but here has type 'DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement>'.
+
+3160             noscript: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+                 ~~~~~~~~
+
+  ../node_modules/@types/react/index.d.ts:3217:13
+    3217             noscript: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+                     ~~~~~~~~
+    'noscript' was also declared here.
+
+node_modules/@types/react/index.d.ts:3161:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'object' must be of type 'DetailedHTMLProps<ObjectHTMLAttributes<HTMLObjectElement>, HTMLObjectElement>', but here has type 'DetailedHTMLProps<ObjectHTMLAttributes<HTMLObjectElement>, HTMLObjectElement>'.
+
+3161             object: React.DetailedHTMLProps<React.ObjectHTMLAttributes<HTMLObjectElement>, HTMLObjectElement>;
+                 ~~~~~~
+
+  ../node_modules/@types/react/index.d.ts:3218:13
+    3218             object: React.DetailedHTMLProps<React.ObjectHTMLAttributes<HTMLObjectElement>, HTMLObjectElement>;
+                     ~~~~~~
+    'object' was also declared here.
+
+node_modules/@types/react/index.d.ts:3162:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'ol' must be of type 'DetailedHTMLProps<OlHTMLAttributes<HTMLOListElement>, HTMLOListElement>', but here has type 'DetailedHTMLProps<OlHTMLAttributes<HTMLOListElement>, HTMLOListElement>'.
+
+3162             ol: React.DetailedHTMLProps<React.OlHTMLAttributes<HTMLOListElement>, HTMLOListElement>;
+                 ~~
+
+  ../node_modules/@types/react/index.d.ts:3219:13
+    3219             ol: React.DetailedHTMLProps<React.OlHTMLAttributes<HTMLOListElement>, HTMLOListElement>;
+                     ~~
+    'ol' was also declared here.
+
+node_modules/@types/react/index.d.ts:3163:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'optgroup' must be of type 'DetailedHTMLProps<OptgroupHTMLAttributes<HTMLOptGroupElement>, HTMLOptGroupElement>', but here has type 'DetailedHTMLProps<OptgroupHTMLAttributes<HTMLOptGroupElement>, HTMLOptGroupElement>'.
+
+3163             optgroup: React.DetailedHTMLProps<React.OptgroupHTMLAttributes<HTMLOptGroupElement>, HTMLOptGroupElement>;
+                 ~~~~~~~~
+
+  ../node_modules/@types/react/index.d.ts:3220:13
+    3220             optgroup: React.DetailedHTMLProps<React.OptgroupHTMLAttributes<HTMLOptGroupElement>, HTMLOptGroupElement>;
+                     ~~~~~~~~
+    'optgroup' was also declared here.
+
+node_modules/@types/react/index.d.ts:3164:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'option' must be of type 'DetailedHTMLProps<OptionHTMLAttributes<HTMLOptionElement>, HTMLOptionElement>', but here has type 'DetailedHTMLProps<OptionHTMLAttributes<HTMLOptionElement>, HTMLOptionElement>'.
+
+3164             option: React.DetailedHTMLProps<React.OptionHTMLAttributes<HTMLOptionElement>, HTMLOptionElement>;
+                 ~~~~~~
+
+  ../node_modules/@types/react/index.d.ts:3221:13
+    3221             option: React.DetailedHTMLProps<React.OptionHTMLAttributes<HTMLOptionElement>, HTMLOptionElement>;
+                     ~~~~~~
+    'option' was also declared here.
+
+node_modules/@types/react/index.d.ts:3165:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'output' must be of type 'DetailedHTMLProps<OutputHTMLAttributes<HTMLOutputElement>, HTMLOutputElement>', but here has type 'DetailedHTMLProps<OutputHTMLAttributes<HTMLOutputElement>, HTMLOutputElement>'.
+
+3165             output: React.DetailedHTMLProps<React.OutputHTMLAttributes<HTMLOutputElement>, HTMLOutputElement>;
+                 ~~~~~~
+
+  ../node_modules/@types/react/index.d.ts:3222:13
+    3222             output: React.DetailedHTMLProps<React.OutputHTMLAttributes<HTMLOutputElement>, HTMLOutputElement>;
+                     ~~~~~~
+    'output' was also declared here.
+
+node_modules/@types/react/index.d.ts:3166:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'p' must be of type 'DetailedHTMLProps<HTMLAttributes<HTMLParagraphElement>, HTMLParagraphElement>', but here has type 'DetailedHTMLProps<HTMLAttributes<HTMLParagraphElement>, HTMLParagraphElement>'.
+
+3166             p: React.DetailedHTMLProps<React.HTMLAttributes<HTMLParagraphElement>, HTMLParagraphElement>;
+                 ~
+
+  ../node_modules/@types/react/index.d.ts:3223:13
+    3223             p: React.DetailedHTMLProps<React.HTMLAttributes<HTMLParagraphElement>, HTMLParagraphElement>;
+                     ~
+    'p' was also declared here.
+
+node_modules/@types/react/index.d.ts:3167:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'param' must be of type 'DetailedHTMLProps<ParamHTMLAttributes<HTMLParamElement>, HTMLParamElement>', but here has type 'DetailedHTMLProps<ParamHTMLAttributes<HTMLParamElement>, HTMLParamElement>'.
+
+3167             param: React.DetailedHTMLProps<React.ParamHTMLAttributes<HTMLParamElement>, HTMLParamElement>;
+                 ~~~~~
+
+  ../node_modules/@types/react/index.d.ts:3224:13
+    3224             param: React.DetailedHTMLProps<React.ParamHTMLAttributes<HTMLParamElement>, HTMLParamElement>;
+                     ~~~~~
+    'param' was also declared here.
+
+node_modules/@types/react/index.d.ts:3168:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'picture' must be of type 'DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement>', but here has type 'DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement>'.
+
+3168             picture: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+                 ~~~~~~~
+
+  ../node_modules/@types/react/index.d.ts:3225:13
+    3225             picture: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+                     ~~~~~~~
+    'picture' was also declared here.
+
+node_modules/@types/react/index.d.ts:3169:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'pre' must be of type 'DetailedHTMLProps<HTMLAttributes<HTMLPreElement>, HTMLPreElement>', but here has type 'DetailedHTMLProps<HTMLAttributes<HTMLPreElement>, HTMLPreElement>'.
+
+3169             pre: React.DetailedHTMLProps<React.HTMLAttributes<HTMLPreElement>, HTMLPreElement>;
+                 ~~~
+
+  ../node_modules/@types/react/index.d.ts:3226:13
+    3226             pre: React.DetailedHTMLProps<React.HTMLAttributes<HTMLPreElement>, HTMLPreElement>;
+                     ~~~
+    'pre' was also declared here.
+
+node_modules/@types/react/index.d.ts:3170:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'progress' must be of type 'DetailedHTMLProps<ProgressHTMLAttributes<HTMLProgressElement>, HTMLProgressElement>', but here has type 'DetailedHTMLProps<ProgressHTMLAttributes<HTMLProgressElement>, HTMLProgressElement>'.
+
+3170             progress: React.DetailedHTMLProps<React.ProgressHTMLAttributes<HTMLProgressElement>, HTMLProgressElement>;
+                 ~~~~~~~~
+
+  ../node_modules/@types/react/index.d.ts:3227:13
+    3227             progress: React.DetailedHTMLProps<React.ProgressHTMLAttributes<HTMLProgressElement>, HTMLProgressElement>;
+                     ~~~~~~~~
+    'progress' was also declared here.
+
+node_modules/@types/react/index.d.ts:3171:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'q' must be of type 'DetailedHTMLProps<QuoteHTMLAttributes<HTMLQuoteElement>, HTMLQuoteElement>', but here has type 'DetailedHTMLProps<QuoteHTMLAttributes<HTMLQuoteElement>, HTMLQuoteElement>'.
+
+3171             q: React.DetailedHTMLProps<React.QuoteHTMLAttributes<HTMLQuoteElement>, HTMLQuoteElement>;
+                 ~
+
+  ../node_modules/@types/react/index.d.ts:3228:13
+    3228             q: React.DetailedHTMLProps<React.QuoteHTMLAttributes<HTMLQuoteElement>, HTMLQuoteElement>;
+                     ~
+    'q' was also declared here.
+
+node_modules/@types/react/index.d.ts:3172:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'rp' must be of type 'DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement>', but here has type 'DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement>'.
+
+3172             rp: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+                 ~~
+
+  ../node_modules/@types/react/index.d.ts:3229:13
+    3229             rp: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+                     ~~
+    'rp' was also declared here.
+
+node_modules/@types/react/index.d.ts:3173:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'rt' must be of type 'DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement>', but here has type 'DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement>'.
+
+3173             rt: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+                 ~~
+
+  ../node_modules/@types/react/index.d.ts:3230:13
+    3230             rt: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+                     ~~
+    'rt' was also declared here.
+
+node_modules/@types/react/index.d.ts:3174:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'ruby' must be of type 'DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement>', but here has type 'DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement>'.
+
+3174             ruby: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+                 ~~~~
+
+  ../node_modules/@types/react/index.d.ts:3231:13
+    3231             ruby: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+                     ~~~~
+    'ruby' was also declared here.
+
+node_modules/@types/react/index.d.ts:3175:13 - error TS2717: Subsequent property declarations must have the same type.  Property 's' must be of type 'DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement>', but here has type 'DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement>'.
+
+3175             s: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+                 ~
+
+  ../node_modules/@types/react/index.d.ts:3232:13
+    3232             s: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+                     ~
+    's' was also declared here.
+
+node_modules/@types/react/index.d.ts:3176:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'samp' must be of type 'DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement>', but here has type 'DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement>'.
+
+3176             samp: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+                 ~~~~
+
+  ../node_modules/@types/react/index.d.ts:3233:13
+    3233             samp: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+                     ~~~~
+    'samp' was also declared here.
+
+node_modules/@types/react/index.d.ts:3177:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'slot' must be of type 'DetailedHTMLProps<SlotHTMLAttributes<HTMLSlotElement>, HTMLSlotElement>', but here has type 'DetailedHTMLProps<SlotHTMLAttributes<HTMLSlotElement>, HTMLSlotElement>'.
+
+3177             slot: React.DetailedHTMLProps<React.SlotHTMLAttributes<HTMLSlotElement>, HTMLSlotElement>;
+                 ~~~~
+
+  ../node_modules/@types/react/index.d.ts:3234:13
+    3234             slot: React.DetailedHTMLProps<React.SlotHTMLAttributes<HTMLSlotElement>, HTMLSlotElement>;
+                     ~~~~
+    'slot' was also declared here.
+
+node_modules/@types/react/index.d.ts:3178:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'script' must be of type 'DetailedHTMLProps<ScriptHTMLAttributes<HTMLScriptElement>, HTMLScriptElement>', but here has type 'DetailedHTMLProps<ScriptHTMLAttributes<HTMLScriptElement>, HTMLScriptElement>'.
+
+3178             script: React.DetailedHTMLProps<React.ScriptHTMLAttributes<HTMLScriptElement>, HTMLScriptElement>;
+                 ~~~~~~
+
+  ../node_modules/@types/react/index.d.ts:3235:13
+    3235             script: React.DetailedHTMLProps<React.ScriptHTMLAttributes<HTMLScriptElement>, HTMLScriptElement>;
+                     ~~~~~~
+    'script' was also declared here.
+
+node_modules/@types/react/index.d.ts:3179:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'section' must be of type 'DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement>', but here has type 'DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement>'.
+
+3179             section: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+                 ~~~~~~~
+
+  ../node_modules/@types/react/index.d.ts:3236:13
+    3236             section: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+                     ~~~~~~~
+    'section' was also declared here.
+
+node_modules/@types/react/index.d.ts:3180:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'select' must be of type 'DetailedHTMLProps<SelectHTMLAttributes<HTMLSelectElement>, HTMLSelectElement>', but here has type 'DetailedHTMLProps<SelectHTMLAttributes<HTMLSelectElement>, HTMLSelectElement>'.
+
+3180             select: React.DetailedHTMLProps<React.SelectHTMLAttributes<HTMLSelectElement>, HTMLSelectElement>;
+                 ~~~~~~
+
+  ../node_modules/@types/react/index.d.ts:3237:13
+    3237             select: React.DetailedHTMLProps<React.SelectHTMLAttributes<HTMLSelectElement>, HTMLSelectElement>;
+                     ~~~~~~
+    'select' was also declared here.
+
+node_modules/@types/react/index.d.ts:3181:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'small' must be of type 'DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement>', but here has type 'DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement>'.
+
+3181             small: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+                 ~~~~~
+
+  ../node_modules/@types/react/index.d.ts:3238:13
+    3238             small: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+                     ~~~~~
+    'small' was also declared here.
+
+node_modules/@types/react/index.d.ts:3182:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'source' must be of type 'DetailedHTMLProps<SourceHTMLAttributes<HTMLSourceElement>, HTMLSourceElement>', but here has type 'DetailedHTMLProps<SourceHTMLAttributes<HTMLSourceElement>, HTMLSourceElement>'.
+
+3182             source: React.DetailedHTMLProps<React.SourceHTMLAttributes<HTMLSourceElement>, HTMLSourceElement>;
+                 ~~~~~~
+
+  ../node_modules/@types/react/index.d.ts:3239:13
+    3239             source: React.DetailedHTMLProps<React.SourceHTMLAttributes<HTMLSourceElement>, HTMLSourceElement>;
+                     ~~~~~~
+    'source' was also declared here.
+
+node_modules/@types/react/index.d.ts:3183:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'span' must be of type 'DetailedHTMLProps<HTMLAttributes<HTMLSpanElement>, HTMLSpanElement>', but here has type 'DetailedHTMLProps<HTMLAttributes<HTMLSpanElement>, HTMLSpanElement>'.
+
+3183             span: React.DetailedHTMLProps<React.HTMLAttributes<HTMLSpanElement>, HTMLSpanElement>;
+                 ~~~~
+
+  ../node_modules/@types/react/index.d.ts:3240:13
+    3240             span: React.DetailedHTMLProps<React.HTMLAttributes<HTMLSpanElement>, HTMLSpanElement>;
+                     ~~~~
+    'span' was also declared here.
+
+node_modules/@types/react/index.d.ts:3184:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'strong' must be of type 'DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement>', but here has type 'DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement>'.
+
+3184             strong: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+                 ~~~~~~
+
+  ../node_modules/@types/react/index.d.ts:3241:13
+    3241             strong: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+                     ~~~~~~
+    'strong' was also declared here.
+
+node_modules/@types/react/index.d.ts:3185:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'style' must be of type 'DetailedHTMLProps<StyleHTMLAttributes<HTMLStyleElement>, HTMLStyleElement>', but here has type 'DetailedHTMLProps<StyleHTMLAttributes<HTMLStyleElement>, HTMLStyleElement>'.
+
+3185             style: React.DetailedHTMLProps<React.StyleHTMLAttributes<HTMLStyleElement>, HTMLStyleElement>;
+                 ~~~~~
+
+  ../node_modules/@types/react/index.d.ts:3242:13
+    3242             style: React.DetailedHTMLProps<React.StyleHTMLAttributes<HTMLStyleElement>, HTMLStyleElement>;
+                     ~~~~~
+    'style' was also declared here.
+
+node_modules/@types/react/index.d.ts:3186:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'sub' must be of type 'DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement>', but here has type 'DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement>'.
+
+3186             sub: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+                 ~~~
+
+  ../node_modules/@types/react/index.d.ts:3243:13
+    3243             sub: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+                     ~~~
+    'sub' was also declared here.
+
+node_modules/@types/react/index.d.ts:3187:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'summary' must be of type 'DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement>', but here has type 'DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement>'.
+
+3187             summary: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+                 ~~~~~~~
+
+  ../node_modules/@types/react/index.d.ts:3244:13
+    3244             summary: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+                     ~~~~~~~
+    'summary' was also declared here.
+
+node_modules/@types/react/index.d.ts:3188:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'sup' must be of type 'DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement>', but here has type 'DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement>'.
+
+3188             sup: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+                 ~~~
+
+  ../node_modules/@types/react/index.d.ts:3245:13
+    3245             sup: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+                     ~~~
+    'sup' was also declared here.
+
+node_modules/@types/react/index.d.ts:3189:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'table' must be of type 'DetailedHTMLProps<TableHTMLAttributes<HTMLTableElement>, HTMLTableElement>', but here has type 'DetailedHTMLProps<TableHTMLAttributes<HTMLTableElement>, HTMLTableElement>'.
+
+3189             table: React.DetailedHTMLProps<React.TableHTMLAttributes<HTMLTableElement>, HTMLTableElement>;
+                 ~~~~~
+
+  ../node_modules/@types/react/index.d.ts:3246:13
+    3246             table: React.DetailedHTMLProps<React.TableHTMLAttributes<HTMLTableElement>, HTMLTableElement>;
+                     ~~~~~
+    'table' was also declared here.
+
+node_modules/@types/react/index.d.ts:3190:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'template' must be of type 'DetailedHTMLProps<HTMLAttributes<HTMLTemplateElement>, HTMLTemplateElement>', but here has type 'DetailedHTMLProps<HTMLAttributes<HTMLTemplateElement>, HTMLTemplateElement>'.
+
+3190             template: React.DetailedHTMLProps<React.HTMLAttributes<HTMLTemplateElement>, HTMLTemplateElement>;
+                 ~~~~~~~~
+
+  ../node_modules/@types/react/index.d.ts:3247:13
+    3247             template: React.DetailedHTMLProps<React.HTMLAttributes<HTMLTemplateElement>, HTMLTemplateElement>;
+                     ~~~~~~~~
+    'template' was also declared here.
+
+node_modules/@types/react/index.d.ts:3191:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'tbody' must be of type 'DetailedHTMLProps<HTMLAttributes<HTMLTableSectionElement>, HTMLTableSectionElement>', but here has type 'DetailedHTMLProps<HTMLAttributes<HTMLTableSectionElement>, HTMLTableSectionElement>'.
+
+3191             tbody: React.DetailedHTMLProps<React.HTMLAttributes<HTMLTableSectionElement>, HTMLTableSectionElement>;
+                 ~~~~~
+
+  ../node_modules/@types/react/index.d.ts:3248:13
+    3248             tbody: React.DetailedHTMLProps<React.HTMLAttributes<HTMLTableSectionElement>, HTMLTableSectionElement>;
+                     ~~~~~
+    'tbody' was also declared here.
+
+node_modules/@types/react/index.d.ts:3192:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'td' must be of type 'DetailedHTMLProps<TdHTMLAttributes<HTMLTableDataCellElement>, HTMLTableDataCellElement>', but here has type 'DetailedHTMLProps<TdHTMLAttributes<HTMLTableDataCellElement>, HTMLTableDataCellElement>'.
+
+3192             td: React.DetailedHTMLProps<React.TdHTMLAttributes<HTMLTableDataCellElement>, HTMLTableDataCellElement>;
+                 ~~
+
+  ../node_modules/@types/react/index.d.ts:3249:13
+    3249             td: React.DetailedHTMLProps<React.TdHTMLAttributes<HTMLTableDataCellElement>, HTMLTableDataCellElement>;
+                     ~~
+    'td' was also declared here.
+
+node_modules/@types/react/index.d.ts:3193:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'textarea' must be of type 'DetailedHTMLProps<TextareaHTMLAttributes<HTMLTextAreaElement>, HTMLTextAreaElement>', but here has type 'DetailedHTMLProps<TextareaHTMLAttributes<HTMLTextAreaElement>, HTMLTextAreaElement>'.
+
+3193             textarea: React.DetailedHTMLProps<React.TextareaHTMLAttributes<HTMLTextAreaElement>, HTMLTextAreaElement>;
+                 ~~~~~~~~
+
+  ../node_modules/@types/react/index.d.ts:3250:13
+    3250             textarea: React.DetailedHTMLProps<React.TextareaHTMLAttributes<HTMLTextAreaElement>, HTMLTextAreaElement>;
+                     ~~~~~~~~
+    'textarea' was also declared here.
+
+node_modules/@types/react/index.d.ts:3194:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'tfoot' must be of type 'DetailedHTMLProps<HTMLAttributes<HTMLTableSectionElement>, HTMLTableSectionElement>', but here has type 'DetailedHTMLProps<HTMLAttributes<HTMLTableSectionElement>, HTMLTableSectionElement>'.
+
+3194             tfoot: React.DetailedHTMLProps<React.HTMLAttributes<HTMLTableSectionElement>, HTMLTableSectionElement>;
+                 ~~~~~
+
+  ../node_modules/@types/react/index.d.ts:3251:13
+    3251             tfoot: React.DetailedHTMLProps<React.HTMLAttributes<HTMLTableSectionElement>, HTMLTableSectionElement>;
+                     ~~~~~
+    'tfoot' was also declared here.
+
+node_modules/@types/react/index.d.ts:3195:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'th' must be of type 'DetailedHTMLProps<ThHTMLAttributes<HTMLTableHeaderCellElement>, HTMLTableHeaderCellElement>', but here has type 'DetailedHTMLProps<ThHTMLAttributes<HTMLTableHeaderCellElement>, HTMLTableHeaderCellElement>'.
+
+3195             th: React.DetailedHTMLProps<React.ThHTMLAttributes<HTMLTableHeaderCellElement>, HTMLTableHeaderCellElement>;
+                 ~~
+
+  ../node_modules/@types/react/index.d.ts:3252:13
+    3252             th: React.DetailedHTMLProps<React.ThHTMLAttributes<HTMLTableHeaderCellElement>, HTMLTableHeaderCellElement>;
+                     ~~
+    'th' was also declared here.
+
+node_modules/@types/react/index.d.ts:3196:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'thead' must be of type 'DetailedHTMLProps<HTMLAttributes<HTMLTableSectionElement>, HTMLTableSectionElement>', but here has type 'DetailedHTMLProps<HTMLAttributes<HTMLTableSectionElement>, HTMLTableSectionElement>'.
+
+3196             thead: React.DetailedHTMLProps<React.HTMLAttributes<HTMLTableSectionElement>, HTMLTableSectionElement>;
+                 ~~~~~
+
+  ../node_modules/@types/react/index.d.ts:3253:13
+    3253             thead: React.DetailedHTMLProps<React.HTMLAttributes<HTMLTableSectionElement>, HTMLTableSectionElement>;
+                     ~~~~~
+    'thead' was also declared here.
+
+node_modules/@types/react/index.d.ts:3197:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'time' must be of type 'DetailedHTMLProps<TimeHTMLAttributes<HTMLTimeElement>, HTMLTimeElement>', but here has type 'DetailedHTMLProps<TimeHTMLAttributes<HTMLTimeElement>, HTMLTimeElement>'.
+
+3197             time: React.DetailedHTMLProps<React.TimeHTMLAttributes<HTMLTimeElement>, HTMLTimeElement>;
+                 ~~~~
+
+  ../node_modules/@types/react/index.d.ts:3254:13
+    3254             time: React.DetailedHTMLProps<React.TimeHTMLAttributes<HTMLTimeElement>, HTMLTimeElement>;
+                     ~~~~
+    'time' was also declared here.
+
+node_modules/@types/react/index.d.ts:3198:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'title' must be of type 'DetailedHTMLProps<HTMLAttributes<HTMLTitleElement>, HTMLTitleElement>', but here has type 'DetailedHTMLProps<HTMLAttributes<HTMLTitleElement>, HTMLTitleElement>'.
+
+3198             title: React.DetailedHTMLProps<React.HTMLAttributes<HTMLTitleElement>, HTMLTitleElement>;
+                 ~~~~~
+
+  ../node_modules/@types/react/index.d.ts:3255:13
+    3255             title: React.DetailedHTMLProps<React.HTMLAttributes<HTMLTitleElement>, HTMLTitleElement>;
+                     ~~~~~
+    'title' was also declared here.
+
+node_modules/@types/react/index.d.ts:3199:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'tr' must be of type 'DetailedHTMLProps<HTMLAttributes<HTMLTableRowElement>, HTMLTableRowElement>', but here has type 'DetailedHTMLProps<HTMLAttributes<HTMLTableRowElement>, HTMLTableRowElement>'.
+
+3199             tr: React.DetailedHTMLProps<React.HTMLAttributes<HTMLTableRowElement>, HTMLTableRowElement>;
+                 ~~
+
+  ../node_modules/@types/react/index.d.ts:3256:13
+    3256             tr: React.DetailedHTMLProps<React.HTMLAttributes<HTMLTableRowElement>, HTMLTableRowElement>;
+                     ~~
+    'tr' was also declared here.
+
+node_modules/@types/react/index.d.ts:3200:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'track' must be of type 'DetailedHTMLProps<TrackHTMLAttributes<HTMLTrackElement>, HTMLTrackElement>', but here has type 'DetailedHTMLProps<TrackHTMLAttributes<HTMLTrackElement>, HTMLTrackElement>'.
+
+3200             track: React.DetailedHTMLProps<React.TrackHTMLAttributes<HTMLTrackElement>, HTMLTrackElement>;
+                 ~~~~~
+
+  ../node_modules/@types/react/index.d.ts:3257:13
+    3257             track: React.DetailedHTMLProps<React.TrackHTMLAttributes<HTMLTrackElement>, HTMLTrackElement>;
+                     ~~~~~
+    'track' was also declared here.
+
+node_modules/@types/react/index.d.ts:3201:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'u' must be of type 'DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement>', but here has type 'DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement>'.
+
+3201             u: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+                 ~
+
+  ../node_modules/@types/react/index.d.ts:3258:13
+    3258             u: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+                     ~
+    'u' was also declared here.
+
+node_modules/@types/react/index.d.ts:3202:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'ul' must be of type 'DetailedHTMLProps<HTMLAttributes<HTMLUListElement>, HTMLUListElement>', but here has type 'DetailedHTMLProps<HTMLAttributes<HTMLUListElement>, HTMLUListElement>'.
+
+3202             ul: React.DetailedHTMLProps<React.HTMLAttributes<HTMLUListElement>, HTMLUListElement>;
+                 ~~
+
+  ../node_modules/@types/react/index.d.ts:3259:13
+    3259             ul: React.DetailedHTMLProps<React.HTMLAttributes<HTMLUListElement>, HTMLUListElement>;
+                     ~~
+    'ul' was also declared here.
+
+node_modules/@types/react/index.d.ts:3203:13 - error TS2717: Subsequent property declarations must have the same type.  Property '"var"' must be of type 'DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement>', but here has type 'DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement>'.
+
+3203             "var": React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+                 ~~~~~
+
+  ../node_modules/@types/react/index.d.ts:3260:13
+    3260             "var": React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+                     ~~~~~
+    '"var"' was also declared here.
+
+node_modules/@types/react/index.d.ts:3204:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'video' must be of type 'DetailedHTMLProps<VideoHTMLAttributes<HTMLVideoElement>, HTMLVideoElement>', but here has type 'DetailedHTMLProps<VideoHTMLAttributes<HTMLVideoElement>, HTMLVideoElement>'.
+
+3204             video: React.DetailedHTMLProps<React.VideoHTMLAttributes<HTMLVideoElement>, HTMLVideoElement>;
+                 ~~~~~
+
+  ../node_modules/@types/react/index.d.ts:3261:13
+    3261             video: React.DetailedHTMLProps<React.VideoHTMLAttributes<HTMLVideoElement>, HTMLVideoElement>;
+                     ~~~~~
+    'video' was also declared here.
+
+node_modules/@types/react/index.d.ts:3205:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'wbr' must be of type 'DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement>', but here has type 'DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement>'.
+
+3205             wbr: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+                 ~~~
+
+  ../node_modules/@types/react/index.d.ts:3262:13
+    3262             wbr: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
+                     ~~~
+    'wbr' was also declared here.
+
+node_modules/@types/react/index.d.ts:3206:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'webview' must be of type 'DetailedHTMLProps<WebViewHTMLAttributes<HTMLWebViewElement>, HTMLWebViewElement>', but here has type 'DetailedHTMLProps<WebViewHTMLAttributes<HTMLWebViewElement>, HTMLWebViewElement>'.
+
+3206             webview: React.DetailedHTMLProps<React.WebViewHTMLAttributes<HTMLWebViewElement>, HTMLWebViewElement>;
+                 ~~~~~~~
+
+  ../node_modules/@types/react/index.d.ts:3263:13
+    3263             webview: React.DetailedHTMLProps<React.WebViewHTMLAttributes<HTMLWebViewElement>, HTMLWebViewElement>;
+                     ~~~~~~~
+    'webview' was also declared here.
+
+node_modules/@types/react/index.d.ts:3209:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'svg' must be of type 'SVGProps<SVGSVGElement>', but here has type 'SVGProps<SVGSVGElement>'.
+
+3209             svg: React.SVGProps<SVGSVGElement>;
+                 ~~~
+
+  ../node_modules/@types/react/index.d.ts:3266:13
+    3266             svg: React.SVGProps<SVGSVGElement>;
+                     ~~~
+    'svg' was also declared here.
+
+node_modules/@types/react/index.d.ts:3211:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'animate' must be of type 'SVGProps<SVGElement>', but here has type 'SVGProps<SVGElement>'.
+
+3211             animate: React.SVGProps<SVGElement>; // TODO: It is SVGAnimateElement but is not in TypeScript's lib.dom.d.ts for now.
+                 ~~~~~~~
+
+  ../node_modules/@types/react/index.d.ts:3268:13
+    3268             animate: React.SVGProps<SVGElement>; // TODO: It is SVGAnimateElement but is not in TypeScript's lib.dom.d.ts for now.
+                     ~~~~~~~
+    'animate' was also declared here.
+
+node_modules/@types/react/index.d.ts:3212:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'animateMotion' must be of type 'SVGProps<SVGElement>', but here has type 'SVGProps<SVGElement>'.
+
+3212             animateMotion: React.SVGProps<SVGElement>;
+                 ~~~~~~~~~~~~~
+
+  ../node_modules/@types/react/index.d.ts:3269:13
+    3269             animateMotion: React.SVGProps<SVGElement>;
+                     ~~~~~~~~~~~~~
+    'animateMotion' was also declared here.
+
+node_modules/@types/react/index.d.ts:3213:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'animateTransform' must be of type 'SVGProps<SVGElement>', but here has type 'SVGProps<SVGElement>'.
+
+3213             animateTransform: React.SVGProps<SVGElement>; // TODO: It is SVGAnimateTransformElement but is not in TypeScript's lib.dom.d.ts for now.
+                 ~~~~~~~~~~~~~~~~
+
+  ../node_modules/@types/react/index.d.ts:3270:13
+    3270             animateTransform: React.SVGProps<SVGElement>; // TODO: It is SVGAnimateTransformElement but is not in TypeScript's lib.dom.d.ts for now.
+                     ~~~~~~~~~~~~~~~~
+    'animateTransform' was also declared here.
+
+node_modules/@types/react/index.d.ts:3214:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'circle' must be of type 'SVGProps<SVGCircleElement>', but here has type 'SVGProps<SVGCircleElement>'.
+
+3214             circle: React.SVGProps<SVGCircleElement>;
+                 ~~~~~~
+
+  ../node_modules/@types/react/index.d.ts:3271:13
+    3271             circle: React.SVGProps<SVGCircleElement>;
+                     ~~~~~~
+    'circle' was also declared here.
+
+node_modules/@types/react/index.d.ts:3215:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'clipPath' must be of type 'SVGProps<SVGClipPathElement>', but here has type 'SVGProps<SVGClipPathElement>'.
+
+3215             clipPath: React.SVGProps<SVGClipPathElement>;
+                 ~~~~~~~~
+
+  ../node_modules/@types/react/index.d.ts:3272:13
+    3272             clipPath: React.SVGProps<SVGClipPathElement>;
+                     ~~~~~~~~
+    'clipPath' was also declared here.
+
+node_modules/@types/react/index.d.ts:3216:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'defs' must be of type 'SVGProps<SVGDefsElement>', but here has type 'SVGProps<SVGDefsElement>'.
+
+3216             defs: React.SVGProps<SVGDefsElement>;
+                 ~~~~
+
+  ../node_modules/@types/react/index.d.ts:3273:13
+    3273             defs: React.SVGProps<SVGDefsElement>;
+                     ~~~~
+    'defs' was also declared here.
+
+node_modules/@types/react/index.d.ts:3217:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'desc' must be of type 'SVGProps<SVGDescElement>', but here has type 'SVGProps<SVGDescElement>'.
+
+3217             desc: React.SVGProps<SVGDescElement>;
+                 ~~~~
+
+  ../node_modules/@types/react/index.d.ts:3274:13
+    3274             desc: React.SVGProps<SVGDescElement>;
+                     ~~~~
+    'desc' was also declared here.
+
+node_modules/@types/react/index.d.ts:3218:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'ellipse' must be of type 'SVGProps<SVGEllipseElement>', but here has type 'SVGProps<SVGEllipseElement>'.
+
+3218             ellipse: React.SVGProps<SVGEllipseElement>;
+                 ~~~~~~~
+
+  ../node_modules/@types/react/index.d.ts:3275:13
+    3275             ellipse: React.SVGProps<SVGEllipseElement>;
+                     ~~~~~~~
+    'ellipse' was also declared here.
+
+node_modules/@types/react/index.d.ts:3219:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'feBlend' must be of type 'SVGProps<SVGFEBlendElement>', but here has type 'SVGProps<SVGFEBlendElement>'.
+
+3219             feBlend: React.SVGProps<SVGFEBlendElement>;
+                 ~~~~~~~
+
+  ../node_modules/@types/react/index.d.ts:3276:13
+    3276             feBlend: React.SVGProps<SVGFEBlendElement>;
+                     ~~~~~~~
+    'feBlend' was also declared here.
+
+node_modules/@types/react/index.d.ts:3220:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'feColorMatrix' must be of type 'SVGProps<SVGFEColorMatrixElement>', but here has type 'SVGProps<SVGFEColorMatrixElement>'.
+
+3220             feColorMatrix: React.SVGProps<SVGFEColorMatrixElement>;
+                 ~~~~~~~~~~~~~
+
+  ../node_modules/@types/react/index.d.ts:3277:13
+    3277             feColorMatrix: React.SVGProps<SVGFEColorMatrixElement>;
+                     ~~~~~~~~~~~~~
+    'feColorMatrix' was also declared here.
+
+node_modules/@types/react/index.d.ts:3221:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'feComponentTransfer' must be of type 'SVGProps<SVGFEComponentTransferElement>', but here has type 'SVGProps<SVGFEComponentTransferElement>'.
+
+3221             feComponentTransfer: React.SVGProps<SVGFEComponentTransferElement>;
+                 ~~~~~~~~~~~~~~~~~~~
+
+  ../node_modules/@types/react/index.d.ts:3278:13
+    3278             feComponentTransfer: React.SVGProps<SVGFEComponentTransferElement>;
+                     ~~~~~~~~~~~~~~~~~~~
+    'feComponentTransfer' was also declared here.
+
+node_modules/@types/react/index.d.ts:3222:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'feComposite' must be of type 'SVGProps<SVGFECompositeElement>', but here has type 'SVGProps<SVGFECompositeElement>'.
+
+3222             feComposite: React.SVGProps<SVGFECompositeElement>;
+                 ~~~~~~~~~~~
+
+  ../node_modules/@types/react/index.d.ts:3279:13
+    3279             feComposite: React.SVGProps<SVGFECompositeElement>;
+                     ~~~~~~~~~~~
+    'feComposite' was also declared here.
+
+node_modules/@types/react/index.d.ts:3223:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'feConvolveMatrix' must be of type 'SVGProps<SVGFEConvolveMatrixElement>', but here has type 'SVGProps<SVGFEConvolveMatrixElement>'.
+
+3223             feConvolveMatrix: React.SVGProps<SVGFEConvolveMatrixElement>;
+                 ~~~~~~~~~~~~~~~~
+
+  ../node_modules/@types/react/index.d.ts:3280:13
+    3280             feConvolveMatrix: React.SVGProps<SVGFEConvolveMatrixElement>;
+                     ~~~~~~~~~~~~~~~~
+    'feConvolveMatrix' was also declared here.
+
+node_modules/@types/react/index.d.ts:3224:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'feDiffuseLighting' must be of type 'SVGProps<SVGFEDiffuseLightingElement>', but here has type 'SVGProps<SVGFEDiffuseLightingElement>'.
+
+3224             feDiffuseLighting: React.SVGProps<SVGFEDiffuseLightingElement>;
+                 ~~~~~~~~~~~~~~~~~
+
+  ../node_modules/@types/react/index.d.ts:3281:13
+    3281             feDiffuseLighting: React.SVGProps<SVGFEDiffuseLightingElement>;
+                     ~~~~~~~~~~~~~~~~~
+    'feDiffuseLighting' was also declared here.
+
+node_modules/@types/react/index.d.ts:3225:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'feDisplacementMap' must be of type 'SVGProps<SVGFEDisplacementMapElement>', but here has type 'SVGProps<SVGFEDisplacementMapElement>'.
+
+3225             feDisplacementMap: React.SVGProps<SVGFEDisplacementMapElement>;
+                 ~~~~~~~~~~~~~~~~~
+
+  ../node_modules/@types/react/index.d.ts:3282:13
+    3282             feDisplacementMap: React.SVGProps<SVGFEDisplacementMapElement>;
+                     ~~~~~~~~~~~~~~~~~
+    'feDisplacementMap' was also declared here.
+
+node_modules/@types/react/index.d.ts:3226:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'feDistantLight' must be of type 'SVGProps<SVGFEDistantLightElement>', but here has type 'SVGProps<SVGFEDistantLightElement>'.
+
+3226             feDistantLight: React.SVGProps<SVGFEDistantLightElement>;
+                 ~~~~~~~~~~~~~~
+
+  ../node_modules/@types/react/index.d.ts:3283:13
+    3283             feDistantLight: React.SVGProps<SVGFEDistantLightElement>;
+                     ~~~~~~~~~~~~~~
+    'feDistantLight' was also declared here.
+
+node_modules/@types/react/index.d.ts:3227:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'feDropShadow' must be of type 'SVGProps<SVGFEDropShadowElement>', but here has type 'SVGProps<SVGFEDropShadowElement>'.
+
+3227             feDropShadow: React.SVGProps<SVGFEDropShadowElement>;
+                 ~~~~~~~~~~~~
+
+  ../node_modules/@types/react/index.d.ts:3284:13
+    3284             feDropShadow: React.SVGProps<SVGFEDropShadowElement>;
+                     ~~~~~~~~~~~~
+    'feDropShadow' was also declared here.
+
+node_modules/@types/react/index.d.ts:3228:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'feFlood' must be of type 'SVGProps<SVGFEFloodElement>', but here has type 'SVGProps<SVGFEFloodElement>'.
+
+3228             feFlood: React.SVGProps<SVGFEFloodElement>;
+                 ~~~~~~~
+
+  ../node_modules/@types/react/index.d.ts:3285:13
+    3285             feFlood: React.SVGProps<SVGFEFloodElement>;
+                     ~~~~~~~
+    'feFlood' was also declared here.
+
+node_modules/@types/react/index.d.ts:3229:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'feFuncA' must be of type 'SVGProps<SVGFEFuncAElement>', but here has type 'SVGProps<SVGFEFuncAElement>'.
+
+3229             feFuncA: React.SVGProps<SVGFEFuncAElement>;
+                 ~~~~~~~
+
+  ../node_modules/@types/react/index.d.ts:3286:13
+    3286             feFuncA: React.SVGProps<SVGFEFuncAElement>;
+                     ~~~~~~~
+    'feFuncA' was also declared here.
+
+node_modules/@types/react/index.d.ts:3230:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'feFuncB' must be of type 'SVGProps<SVGFEFuncBElement>', but here has type 'SVGProps<SVGFEFuncBElement>'.
+
+3230             feFuncB: React.SVGProps<SVGFEFuncBElement>;
+                 ~~~~~~~
+
+  ../node_modules/@types/react/index.d.ts:3287:13
+    3287             feFuncB: React.SVGProps<SVGFEFuncBElement>;
+                     ~~~~~~~
+    'feFuncB' was also declared here.
+
+node_modules/@types/react/index.d.ts:3231:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'feFuncG' must be of type 'SVGProps<SVGFEFuncGElement>', but here has type 'SVGProps<SVGFEFuncGElement>'.
+
+3231             feFuncG: React.SVGProps<SVGFEFuncGElement>;
+                 ~~~~~~~
+
+  ../node_modules/@types/react/index.d.ts:3288:13
+    3288             feFuncG: React.SVGProps<SVGFEFuncGElement>;
+                     ~~~~~~~
+    'feFuncG' was also declared here.
+
+node_modules/@types/react/index.d.ts:3232:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'feFuncR' must be of type 'SVGProps<SVGFEFuncRElement>', but here has type 'SVGProps<SVGFEFuncRElement>'.
+
+3232             feFuncR: React.SVGProps<SVGFEFuncRElement>;
+                 ~~~~~~~
+
+  ../node_modules/@types/react/index.d.ts:3289:13
+    3289             feFuncR: React.SVGProps<SVGFEFuncRElement>;
+                     ~~~~~~~
+    'feFuncR' was also declared here.
+
+node_modules/@types/react/index.d.ts:3233:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'feGaussianBlur' must be of type 'SVGProps<SVGFEGaussianBlurElement>', but here has type 'SVGProps<SVGFEGaussianBlurElement>'.
+
+3233             feGaussianBlur: React.SVGProps<SVGFEGaussianBlurElement>;
+                 ~~~~~~~~~~~~~~
+
+  ../node_modules/@types/react/index.d.ts:3290:13
+    3290             feGaussianBlur: React.SVGProps<SVGFEGaussianBlurElement>;
+                     ~~~~~~~~~~~~~~
+    'feGaussianBlur' was also declared here.
+
+node_modules/@types/react/index.d.ts:3234:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'feImage' must be of type 'SVGProps<SVGFEImageElement>', but here has type 'SVGProps<SVGFEImageElement>'.
+
+3234             feImage: React.SVGProps<SVGFEImageElement>;
+                 ~~~~~~~
+
+  ../node_modules/@types/react/index.d.ts:3291:13
+    3291             feImage: React.SVGProps<SVGFEImageElement>;
+                     ~~~~~~~
+    'feImage' was also declared here.
+
+node_modules/@types/react/index.d.ts:3235:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'feMerge' must be of type 'SVGProps<SVGFEMergeElement>', but here has type 'SVGProps<SVGFEMergeElement>'.
+
+3235             feMerge: React.SVGProps<SVGFEMergeElement>;
+                 ~~~~~~~
+
+  ../node_modules/@types/react/index.d.ts:3292:13
+    3292             feMerge: React.SVGProps<SVGFEMergeElement>;
+                     ~~~~~~~
+    'feMerge' was also declared here.
+
+node_modules/@types/react/index.d.ts:3236:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'feMergeNode' must be of type 'SVGProps<SVGFEMergeNodeElement>', but here has type 'SVGProps<SVGFEMergeNodeElement>'.
+
+3236             feMergeNode: React.SVGProps<SVGFEMergeNodeElement>;
+                 ~~~~~~~~~~~
+
+  ../node_modules/@types/react/index.d.ts:3293:13
+    3293             feMergeNode: React.SVGProps<SVGFEMergeNodeElement>;
+                     ~~~~~~~~~~~
+    'feMergeNode' was also declared here.
+
+node_modules/@types/react/index.d.ts:3237:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'feMorphology' must be of type 'SVGProps<SVGFEMorphologyElement>', but here has type 'SVGProps<SVGFEMorphologyElement>'.
+
+3237             feMorphology: React.SVGProps<SVGFEMorphologyElement>;
+                 ~~~~~~~~~~~~
+
+  ../node_modules/@types/react/index.d.ts:3294:13
+    3294             feMorphology: React.SVGProps<SVGFEMorphologyElement>;
+                     ~~~~~~~~~~~~
+    'feMorphology' was also declared here.
+
+node_modules/@types/react/index.d.ts:3238:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'feOffset' must be of type 'SVGProps<SVGFEOffsetElement>', but here has type 'SVGProps<SVGFEOffsetElement>'.
+
+3238             feOffset: React.SVGProps<SVGFEOffsetElement>;
+                 ~~~~~~~~
+
+  ../node_modules/@types/react/index.d.ts:3295:13
+    3295             feOffset: React.SVGProps<SVGFEOffsetElement>;
+                     ~~~~~~~~
+    'feOffset' was also declared here.
+
+node_modules/@types/react/index.d.ts:3239:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'fePointLight' must be of type 'SVGProps<SVGFEPointLightElement>', but here has type 'SVGProps<SVGFEPointLightElement>'.
+
+3239             fePointLight: React.SVGProps<SVGFEPointLightElement>;
+                 ~~~~~~~~~~~~
+
+  ../node_modules/@types/react/index.d.ts:3296:13
+    3296             fePointLight: React.SVGProps<SVGFEPointLightElement>;
+                     ~~~~~~~~~~~~
+    'fePointLight' was also declared here.
+
+node_modules/@types/react/index.d.ts:3240:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'feSpecularLighting' must be of type 'SVGProps<SVGFESpecularLightingElement>', but here has type 'SVGProps<SVGFESpecularLightingElement>'.
+
+3240             feSpecularLighting: React.SVGProps<SVGFESpecularLightingElement>;
+                 ~~~~~~~~~~~~~~~~~~
+
+  ../node_modules/@types/react/index.d.ts:3297:13
+    3297             feSpecularLighting: React.SVGProps<SVGFESpecularLightingElement>;
+                     ~~~~~~~~~~~~~~~~~~
+    'feSpecularLighting' was also declared here.
+
+node_modules/@types/react/index.d.ts:3241:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'feSpotLight' must be of type 'SVGProps<SVGFESpotLightElement>', but here has type 'SVGProps<SVGFESpotLightElement>'.
+
+3241             feSpotLight: React.SVGProps<SVGFESpotLightElement>;
+                 ~~~~~~~~~~~
+
+  ../node_modules/@types/react/index.d.ts:3298:13
+    3298             feSpotLight: React.SVGProps<SVGFESpotLightElement>;
+                     ~~~~~~~~~~~
+    'feSpotLight' was also declared here.
+
+node_modules/@types/react/index.d.ts:3242:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'feTile' must be of type 'SVGProps<SVGFETileElement>', but here has type 'SVGProps<SVGFETileElement>'.
+
+3242             feTile: React.SVGProps<SVGFETileElement>;
+                 ~~~~~~
+
+  ../node_modules/@types/react/index.d.ts:3299:13
+    3299             feTile: React.SVGProps<SVGFETileElement>;
+                     ~~~~~~
+    'feTile' was also declared here.
+
+node_modules/@types/react/index.d.ts:3243:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'feTurbulence' must be of type 'SVGProps<SVGFETurbulenceElement>', but here has type 'SVGProps<SVGFETurbulenceElement>'.
+
+3243             feTurbulence: React.SVGProps<SVGFETurbulenceElement>;
+                 ~~~~~~~~~~~~
+
+  ../node_modules/@types/react/index.d.ts:3300:13
+    3300             feTurbulence: React.SVGProps<SVGFETurbulenceElement>;
+                     ~~~~~~~~~~~~
+    'feTurbulence' was also declared here.
+
+node_modules/@types/react/index.d.ts:3244:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'filter' must be of type 'SVGProps<SVGFilterElement>', but here has type 'SVGProps<SVGFilterElement>'.
+
+3244             filter: React.SVGProps<SVGFilterElement>;
+                 ~~~~~~
+
+  ../node_modules/@types/react/index.d.ts:3301:13
+    3301             filter: React.SVGProps<SVGFilterElement>;
+                     ~~~~~~
+    'filter' was also declared here.
+
+node_modules/@types/react/index.d.ts:3245:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'foreignObject' must be of type 'SVGProps<SVGForeignObjectElement>', but here has type 'SVGProps<SVGForeignObjectElement>'.
+
+3245             foreignObject: React.SVGProps<SVGForeignObjectElement>;
+                 ~~~~~~~~~~~~~
+
+  ../node_modules/@types/react/index.d.ts:3302:13
+    3302             foreignObject: React.SVGProps<SVGForeignObjectElement>;
+                     ~~~~~~~~~~~~~
+    'foreignObject' was also declared here.
+
+node_modules/@types/react/index.d.ts:3246:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'g' must be of type 'SVGProps<SVGGElement>', but here has type 'SVGProps<SVGGElement>'.
+
+3246             g: React.SVGProps<SVGGElement>;
+                 ~
+
+  ../node_modules/@types/react/index.d.ts:3303:13
+    3303             g: React.SVGProps<SVGGElement>;
+                     ~
+    'g' was also declared here.
+
+node_modules/@types/react/index.d.ts:3247:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'image' must be of type 'SVGProps<SVGImageElement>', but here has type 'SVGProps<SVGImageElement>'.
+
+3247             image: React.SVGProps<SVGImageElement>;
+                 ~~~~~
+
+  ../node_modules/@types/react/index.d.ts:3304:13
+    3304             image: React.SVGProps<SVGImageElement>;
+                     ~~~~~
+    'image' was also declared here.
+
+node_modules/@types/react/index.d.ts:3248:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'line' must be of type 'SVGProps<SVGLineElement>', but here has type 'SVGProps<SVGLineElement>'.
+
+3248             line: React.SVGProps<SVGLineElement>;
+                 ~~~~
+
+  ../node_modules/@types/react/index.d.ts:3305:13
+    3305             line: React.SVGProps<SVGLineElement>;
+                     ~~~~
+    'line' was also declared here.
+
+node_modules/@types/react/index.d.ts:3249:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'linearGradient' must be of type 'SVGProps<SVGLinearGradientElement>', but here has type 'SVGProps<SVGLinearGradientElement>'.
+
+3249             linearGradient: React.SVGProps<SVGLinearGradientElement>;
+                 ~~~~~~~~~~~~~~
+
+  ../node_modules/@types/react/index.d.ts:3306:13
+    3306             linearGradient: React.SVGProps<SVGLinearGradientElement>;
+                     ~~~~~~~~~~~~~~
+    'linearGradient' was also declared here.
+
+node_modules/@types/react/index.d.ts:3250:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'marker' must be of type 'SVGProps<SVGMarkerElement>', but here has type 'SVGProps<SVGMarkerElement>'.
+
+3250             marker: React.SVGProps<SVGMarkerElement>;
+                 ~~~~~~
+
+  ../node_modules/@types/react/index.d.ts:3307:13
+    3307             marker: React.SVGProps<SVGMarkerElement>;
+                     ~~~~~~
+    'marker' was also declared here.
+
+node_modules/@types/react/index.d.ts:3251:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'mask' must be of type 'SVGProps<SVGMaskElement>', but here has type 'SVGProps<SVGMaskElement>'.
+
+3251             mask: React.SVGProps<SVGMaskElement>;
+                 ~~~~
+
+  ../node_modules/@types/react/index.d.ts:3308:13
+    3308             mask: React.SVGProps<SVGMaskElement>;
+                     ~~~~
+    'mask' was also declared here.
+
+node_modules/@types/react/index.d.ts:3252:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'metadata' must be of type 'SVGProps<SVGMetadataElement>', but here has type 'SVGProps<SVGMetadataElement>'.
+
+3252             metadata: React.SVGProps<SVGMetadataElement>;
+                 ~~~~~~~~
+
+  ../node_modules/@types/react/index.d.ts:3309:13
+    3309             metadata: React.SVGProps<SVGMetadataElement>;
+                     ~~~~~~~~
+    'metadata' was also declared here.
+
+node_modules/@types/react/index.d.ts:3253:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'mpath' must be of type 'SVGProps<SVGElement>', but here has type 'SVGProps<SVGElement>'.
+
+3253             mpath: React.SVGProps<SVGElement>;
+                 ~~~~~
+
+  ../node_modules/@types/react/index.d.ts:3310:13
+    3310             mpath: React.SVGProps<SVGElement>;
+                     ~~~~~
+    'mpath' was also declared here.
+
+node_modules/@types/react/index.d.ts:3254:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'path' must be of type 'SVGProps<SVGPathElement>', but here has type 'SVGProps<SVGPathElement>'.
+
+3254             path: React.SVGProps<SVGPathElement>;
+                 ~~~~
+
+  ../node_modules/@types/react/index.d.ts:3311:13
+    3311             path: React.SVGProps<SVGPathElement>;
+                     ~~~~
+    'path' was also declared here.
+
+node_modules/@types/react/index.d.ts:3255:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'pattern' must be of type 'SVGProps<SVGPatternElement>', but here has type 'SVGProps<SVGPatternElement>'.
+
+3255             pattern: React.SVGProps<SVGPatternElement>;
+                 ~~~~~~~
+
+  ../node_modules/@types/react/index.d.ts:3312:13
+    3312             pattern: React.SVGProps<SVGPatternElement>;
+                     ~~~~~~~
+    'pattern' was also declared here.
+
+node_modules/@types/react/index.d.ts:3256:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'polygon' must be of type 'SVGProps<SVGPolygonElement>', but here has type 'SVGProps<SVGPolygonElement>'.
+
+3256             polygon: React.SVGProps<SVGPolygonElement>;
+                 ~~~~~~~
+
+  ../node_modules/@types/react/index.d.ts:3313:13
+    3313             polygon: React.SVGProps<SVGPolygonElement>;
+                     ~~~~~~~
+    'polygon' was also declared here.
+
+node_modules/@types/react/index.d.ts:3257:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'polyline' must be of type 'SVGProps<SVGPolylineElement>', but here has type 'SVGProps<SVGPolylineElement>'.
+
+3257             polyline: React.SVGProps<SVGPolylineElement>;
+                 ~~~~~~~~
+
+  ../node_modules/@types/react/index.d.ts:3314:13
+    3314             polyline: React.SVGProps<SVGPolylineElement>;
+                     ~~~~~~~~
+    'polyline' was also declared here.
+
+node_modules/@types/react/index.d.ts:3258:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'radialGradient' must be of type 'SVGProps<SVGRadialGradientElement>', but here has type 'SVGProps<SVGRadialGradientElement>'.
+
+3258             radialGradient: React.SVGProps<SVGRadialGradientElement>;
+                 ~~~~~~~~~~~~~~
+
+  ../node_modules/@types/react/index.d.ts:3315:13
+    3315             radialGradient: React.SVGProps<SVGRadialGradientElement>;
+                     ~~~~~~~~~~~~~~
+    'radialGradient' was also declared here.
+
+node_modules/@types/react/index.d.ts:3259:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'rect' must be of type 'SVGProps<SVGRectElement>', but here has type 'SVGProps<SVGRectElement>'.
+
+3259             rect: React.SVGProps<SVGRectElement>;
+                 ~~~~
+
+  ../node_modules/@types/react/index.d.ts:3316:13
+    3316             rect: React.SVGProps<SVGRectElement>;
+                     ~~~~
+    'rect' was also declared here.
+
+node_modules/@types/react/index.d.ts:3260:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'stop' must be of type 'SVGProps<SVGStopElement>', but here has type 'SVGProps<SVGStopElement>'.
+
+3260             stop: React.SVGProps<SVGStopElement>;
+                 ~~~~
+
+  ../node_modules/@types/react/index.d.ts:3317:13
+    3317             stop: React.SVGProps<SVGStopElement>;
+                     ~~~~
+    'stop' was also declared here.
+
+node_modules/@types/react/index.d.ts:3261:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'switch' must be of type 'SVGProps<SVGSwitchElement>', but here has type 'SVGProps<SVGSwitchElement>'.
+
+3261             switch: React.SVGProps<SVGSwitchElement>;
+                 ~~~~~~
+
+  ../node_modules/@types/react/index.d.ts:3318:13
+    3318             switch: React.SVGProps<SVGSwitchElement>;
+                     ~~~~~~
+    'switch' was also declared here.
+
+node_modules/@types/react/index.d.ts:3262:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'symbol' must be of type 'SVGProps<SVGSymbolElement>', but here has type 'SVGProps<SVGSymbolElement>'.
+
+3262             symbol: React.SVGProps<SVGSymbolElement>;
+                 ~~~~~~
+
+  ../node_modules/@types/react/index.d.ts:3319:13
+    3319             symbol: React.SVGProps<SVGSymbolElement>;
+                     ~~~~~~
+    'symbol' was also declared here.
+
+node_modules/@types/react/index.d.ts:3263:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'text' must be of type 'SVGProps<SVGTextElement>', but here has type 'SVGProps<SVGTextElement>'.
+
+3263             text: React.SVGProps<SVGTextElement>;
+                 ~~~~
+
+  ../node_modules/@types/react/index.d.ts:3320:13
+    3320             text: React.SVGProps<SVGTextElement>;
+                     ~~~~
+    'text' was also declared here.
+
+node_modules/@types/react/index.d.ts:3264:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'textPath' must be of type 'SVGProps<SVGTextPathElement>', but here has type 'SVGProps<SVGTextPathElement>'.
+
+3264             textPath: React.SVGProps<SVGTextPathElement>;
+                 ~~~~~~~~
+
+  ../node_modules/@types/react/index.d.ts:3321:13
+    3321             textPath: React.SVGProps<SVGTextPathElement>;
+                     ~~~~~~~~
+    'textPath' was also declared here.
+
+node_modules/@types/react/index.d.ts:3265:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'tspan' must be of type 'SVGProps<SVGTSpanElement>', but here has type 'SVGProps<SVGTSpanElement>'.
+
+3265             tspan: React.SVGProps<SVGTSpanElement>;
+                 ~~~~~
+
+  ../node_modules/@types/react/index.d.ts:3322:13
+    3322             tspan: React.SVGProps<SVGTSpanElement>;
+                     ~~~~~
+    'tspan' was also declared here.
+
+node_modules/@types/react/index.d.ts:3266:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'use' must be of type 'SVGProps<SVGUseElement>', but here has type 'SVGProps<SVGUseElement>'.
+
+3266             use: React.SVGProps<SVGUseElement>;
+                 ~~~
+
+  ../node_modules/@types/react/index.d.ts:3323:13
+    3323             use: React.SVGProps<SVGUseElement>;
+                     ~~~
+    'use' was also declared here.
+
+node_modules/@types/react/index.d.ts:3267:13 - error TS2717: Subsequent property declarations must have the same type.  Property 'view' must be of type 'SVGProps<SVGViewElement>', but here has type 'SVGProps<SVGViewElement>'.
+
+3267             view: React.SVGProps<SVGViewElement>;
+                 ~~~~
+
+  ../node_modules/@types/react/index.d.ts:3324:13
+    3324             view: React.SVGProps<SVGViewElement>;
+                     ~~~~
+    'view' was also declared here.
+
+../node_modules/@types/react/index.d.ts:3127:19 - error TS2320: Interface 'ElementClass' cannot simultaneously extend types 'Component<any, {}, any>' and 'Component<any, {}, any>'.
+  Named property 'context' of types 'Component<any, {}, any>' and 'Component<any, {}, any>' are not identical.
+
+3127         interface ElementClass extends React.Component<any> {
+                       ~~~~~~~~~~~~
+
+../node_modules/@types/react/index.d.ts:3127:19 - error TS2320: Interface 'ElementClass' cannot simultaneously extend types 'Component<any, {}, any>' and 'Component<any, {}, any>'.
+  Named property 'props' of types 'Component<any, {}, any>' and 'Component<any, {}, any>' are not identical.
+
+3127         interface ElementClass extends React.Component<any> {
+                       ~~~~~~~~~~~~
+
+../node_modules/@types/react/index.d.ts:3127:19 - error TS2320: Interface 'ElementClass' cannot simultaneously extend types 'Component<any, {}, any>' and 'Component<any, {}, any>'.
+  Named property 'refs' of types 'Component<any, {}, any>' and 'Component<any, {}, any>' are not identical.
+
+3127         interface ElementClass extends React.Component<any> {
+                       ~~~~~~~~~~~~
+
+../node_modules/@types/react/index.d.ts:3135:14 - error TS2300: Duplicate identifier 'LibraryManagedAttributes'.
+
+3135         type LibraryManagedAttributes<C, P> = C extends React.MemoExoticComponent<infer T> | React.LazyExoticComponent<infer T>
+                  ~~~~~~~~~~~~~~~~~~~~~~~~
+
+  node_modules/@types/react/index.d.ts:3079:14
+    3079         type LibraryManagedAttributes<C, P> = C extends React.MemoExoticComponent<infer T> | React.LazyExoticComponent<infer T>
+                      ~~~~~~~~~~~~~~~~~~~~~~~~
+    'LibraryManagedAttributes' was also declared here.
+
+
+Found 184 errors in 4 files.
+
+Errors  Files
+     3  index.ts:22
+     1  node_modules/@jupyterlab/codeeditor/lib/editor.d.ts:47
+   176  node_modules/@types/react/index.d.ts:3079
+     4  ../node_modules/@types/react/index.d.ts:3127
+Files:             1155
+Lines:           255755
+Identifiers:     268377
+Symbols:         380992
+Types:           116734
+Instantiations:  348155
+Memory used:    486125K
+I/O read:         0.16s
+I/O write:        0.00s
+Parse time:       1.12s
+Bind time:        0.25s
+Check time:       2.53s
+Emit time:        0.01s
+Total time:       3.91s
+npm ERR! code 2
+npm ERR! path /Users/tzz/codelei_develp/jupyterlab-edit-version/chatgpt-extension
+npm ERR! command failed
+npm ERR! command sh -c npm run clean && npm run build
+
+npm ERR! A complete log of this run can be found in:
+npm ERR!     /Users/tzz/.npm/_logs/2023-03-31T23_19_39_514Z-debug.log
+ ~/c/jupyterlab-edit-version/chatgpt-extension  master ?1 ▓▒░ 
+
