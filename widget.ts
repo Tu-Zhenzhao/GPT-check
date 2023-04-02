@@ -1,525 +1,350 @@
-/* -----------------------------------------------------------------------------
-| Copyright (c) Jupyter Development Team.
-| Distributed under the terms of the Modified BSD License.
-|----------------------------------------------------------------------------*/
-
-import { Extension } from '@codemirror/state';
-
-import { EditorView } from '@codemirror/view';
-
-import { AttachmentsResolver } from '@jupyterlab/attachments';
-
-import { ISessionContext } from '@jupyterlab/apputils';
-
-import { ActivityMonitor, IChangedArgs, URLExt } from '@jupyterlab/coreutils';
-
-import { CodeEditor, CodeEditorWrapper } from '@jupyterlab/codeeditor';
-
-import { DirListing } from '@jupyterlab/filebrowser';
-
-import * as nbformat from '@jupyterlab/nbformat';
+// Copyright (c) Jupyter Development Team.
+// Distributed under the terms of the Modified BSD License.
 
 import {
-  IOutputPrompt,
-  IStdin,
-  OutputArea,
-  OutputPrompt,
-  SimplifiedOutputArea,
-  Stdin
-} from '@jupyterlab/outputarea';
-
-import {
-  imageRendererFactory,
-  IRenderMime,
-  IRenderMimeRegistry,
-  MimeModel
-} from '@jupyterlab/rendermime';
-
-import { Kernel, KernelMessage } from '@jupyterlab/services';
-
-import { IMapChange } from '@jupyter/ydoc';
-
-import { TableOfContentsUtils } from '@jupyterlab/toc';
-
-import { ITranslator, nullTranslator } from '@jupyterlab/translation';
-
-import { addIcon } from '@jupyterlab/ui-components';
-
-import { JSONObject, PromiseDelegate, UUID } from '@lumino/coreutils';
-
-import { some } from '@lumino/algorithm';
-
-import { Drag } from '@lumino/dragdrop';
-
-import { Message, MessageLoop } from '@lumino/messaging';
-
-import { Debouncer } from '@lumino/polling';
-
-import { ISignal, Signal } from '@lumino/signaling';
-
-import { Panel, PanelLayout, Widget } from '@lumino/widgets';
-
-import { InputCollapser, OutputCollapser } from './collapser';
-
-import {
-  CellFooter,
-  CellHeader,
-  ICellFooter,
-  ICellHeader
-} from './headerfooter';
-
-import { IInputPrompt, InputArea, InputPrompt } from './inputarea';
-
-import {
-  CellModel,
-  IAttachmentsCellModel,
+  Cell,
+  CodeCell,
   ICellModel,
   ICodeCellModel,
   IMarkdownCellModel,
-  IRawCellModel
-} from './model';
-
-import { InputPlaceholder, OutputPlaceholder } from './placeholder';
-
-import { ResizeHandle } from './resizeHandle';
-
-import { CommandRegistry } from '@lumino/commands';
-import { IDisposable } from '@lumino/disposable';
-
-
-
-/**
- * The CSS class added to cell widgets.
- */
-const CELL_CLASS = 'jp-Cell';
-
-/**
- * The CSS class added to the cell header.
- */
-const CELL_HEADER_CLASS = 'jp-Cell-header';
-
-/**
- * The CSS class added to the cell footer.
- */
-const CELL_FOOTER_CLASS = 'jp-Cell-footer';
-
-/**
- * The CSS class added to the cell input wrapper.
- */
-const CELL_INPUT_WRAPPER_CLASS = 'jp-Cell-inputWrapper';
+  IRawCellModel,
+  MarkdownCell,
+  RawCell
+} from '@jupyterlab/cells';
+import { CodeEditor, IEditorMimeTypeService } from '@jupyterlab/codeeditor';
+import { IChangedArgs } from '@jupyterlab/coreutils';
+import * as nbformat from '@jupyterlab/nbformat';
+import { IObservableList } from '@jupyterlab/observables';
+import { IRenderMimeRegistry } from '@jupyterlab/rendermime';
+import type { IMapChange } from '@jupyter/ydoc';
+import { TableOfContentsUtils } from '@jupyterlab/toc';
+import { ITranslator, nullTranslator } from '@jupyterlab/translation';
+import { WindowedList } from '@jupyterlab/ui-components';
+import { ArrayExt, findIndex } from '@lumino/algorithm';
+import { MimeData } from '@lumino/coreutils';
+import { ElementExt } from '@lumino/domutils';
+import { Drag } from '@lumino/dragdrop';
+import { Message } from '@lumino/messaging';
+import { AttachedProperty } from '@lumino/properties';
+import { ISignal, Signal } from '@lumino/signaling';
+import { h, VirtualDOM } from '@lumino/virtualdom';
+import { PanelLayout, Widget } from '@lumino/widgets';
+import { NotebookActions } from './actions';
+import { CellList } from './celllist';
+import { DROP_SOURCE_CLASS, DROP_TARGET_CLASS } from './constants';
+import { INotebookModel } from './model';
+import { NotebookViewModel, NotebookWindowedLayout } from './windowing';
 
 /**
- * The CSS class added to the cell output wrapper.
+ * The data attribute added to a widget that has an active kernel.
  */
-const CELL_OUTPUT_WRAPPER_CLASS = 'jp-Cell-outputWrapper';
+const KERNEL_USER = 'jpKernelUser';
 
 /**
- * The CSS class added to the cell input area.
+ * The data attribute added to a widget that can run code.
  */
-const CELL_INPUT_AREA_CLASS = 'jp-Cell-inputArea';
+const CODE_RUNNER = 'jpCodeRunner';
 
 /**
- * The CSS class added to the cell output area.
+ * The data attribute added to a widget that can undo.
  */
-const CELL_OUTPUT_AREA_CLASS = 'jp-Cell-outputArea';
+const UNDOER = 'jpUndoer';
 
 /**
- * The CSS class added to the cell input collapser.
+ * The class name added to notebook widgets.
  */
-const CELL_INPUT_COLLAPSER_CLASS = 'jp-Cell-inputCollapser';
+const NB_CLASS = 'jp-Notebook';
 
 /**
- * The CSS class added to the cell output collapser.
+ * The class name added to notebook widget cells.
  */
-const CELL_OUTPUT_COLLAPSER_CLASS = 'jp-Cell-outputCollapser';
+const NB_CELL_CLASS = 'jp-Notebook-cell';
 
 /**
- * The class name added to the cell when dirty.
+ * The class name added to a notebook in edit mode.
  */
-const DIRTY_CLASS = 'jp-mod-dirty';
+const EDIT_CLASS = 'jp-mod-editMode';
 
 /**
- * The class name added to code cells.
+ * The class name added to a notebook in command mode.
  */
-const CODE_CELL_CLASS = 'jp-CodeCell';
+const COMMAND_CLASS = 'jp-mod-commandMode';
 
 /**
- * The class name added to markdown cells.
+ * The class name added to the active cell.
  */
-const MARKDOWN_CELL_CLASS = 'jp-MarkdownCell';
+const ACTIVE_CLASS = 'jp-mod-active';
 
 /**
- * The class name added to rendered markdown output widgets.
+ * The class name added to selected cells.
  */
-const MARKDOWN_OUTPUT_CLASS = 'jp-MarkdownOutput';
+const SELECTED_CLASS = 'jp-mod-selected';
 
-const MARKDOWN_HEADING_COLLAPSED = 'jp-MarkdownHeadingCollapsed';
+/**
+ * The class name added to an active cell when there are other selected cells.
+ */
+const OTHER_SELECTED_CLASS = 'jp-mod-multiSelected';
 
+/**
+ * The class name added to unconfined images.
+ */
+const UNCONFINED_CLASS = 'jp-mod-unconfined';
+
+/**
+ * The class name added to drag images.
+ */
+const DRAG_IMAGE_CLASS = 'jp-dragImage';
+
+/**
+ * The class name added to singular drag images
+ */
+const SINGLE_DRAG_IMAGE_CLASS = 'jp-dragImage-singlePrompt';
+
+/**
+ * The class name added to the drag image cell content.
+ */
+const CELL_DRAG_CONTENT_CLASS = 'jp-dragImage-content';
+
+/**
+ * The class name added to the drag image cell content.
+ */
+const CELL_DRAG_PROMPT_CLASS = 'jp-dragImage-prompt';
+
+/**
+ * The class name added to the drag image cell content.
+ */
+const CELL_DRAG_MULTIPLE_BACK = 'jp-dragImage-multipleBack';
+
+/**
+ * The mimetype used for Jupyter cell data.
+ */
+const JUPYTER_CELL_MIME = 'application/vnd.jupyter.cells';
+
+/**
+ * The threshold in pixels to start a drag event.
+ */
+const DRAG_THRESHOLD = 5;
+
+/**
+ * Maximal remaining time for idle callback
+ *
+ * Ref: https://developer.mozilla.org/en-US/docs/Web/API/Background_Tasks_API#getting_the_most_out_of_idle_callbacks
+ */
+const MAXIMUM_TIME_REMAINING = 50;
+
+/*
+ * The rendering mode for the notebook.
+ */
+type RenderingLayout = 'default' | 'side-by-side';
+
+/**
+ * The class attached to the heading collapser button
+ */
 const HEADING_COLLAPSER_CLASS = 'jp-collapseHeadingButton';
 
-const SHOW_HIDDEN_CELLS_CLASS = 'jp-showHiddenCellsButton';
+/**
+ * The class that controls the visibility of "heading collapser" and "show hidden cells" buttons.
+ */
+const HEADING_COLLAPSER_VISBILITY_CONTROL_CLASS =
+  'jp-mod-showHiddenCellsButton';
+
+const SIDE_BY_SIDE_CLASS = 'jp-mod-sideBySide';
 
 /**
- * The class name added to raw cells.
+ * The interactivity modes for the notebook.
  */
-const RAW_CELL_CLASS = 'jp-RawCell';
+export type NotebookMode = 'command' | 'edit';
+
+if ((window as any).requestIdleCallback === undefined) {
+  // On Safari, requestIdleCallback is not available, so we use replacement functions for `idleCallbacks`
+  // See: https://developer.mozilla.org/en-US/docs/Web/API/Background_Tasks_API#falling_back_to_settimeout
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  (window as any).requestIdleCallback = function (handler: Function) {
+    let startTime = Date.now();
+    return setTimeout(function () {
+      handler({
+        didTimeout: false,
+        timeRemaining: function () {
+          return Math.max(0, 50.0 - (Date.now() - startTime));
+        }
+      });
+    }, 1);
+  };
+
+  (window as any).cancelIdleCallback = function (id: number) {
+    clearTimeout(id);
+  };
+}
 
 /**
- * The class name added to a rendered input area.
+ * A widget which renders static non-interactive notebooks.
+ *
+ * #### Notes
+ * The widget model must be set separately and can be changed
+ * at any time.  Consumers of the widget must account for a
+ * `null` model, and may want to listen to the `modelChanged`
+ * signal.
  */
-const RENDERED_CLASS = 'jp-mod-rendered';
-
-const NO_OUTPUTS_CLASS = 'jp-mod-noOutputs';
-
-/**
- * The text applied to an empty markdown cell.
- */
-const DEFAULT_MARKDOWN_TEXT = 'Type Markdown and LaTeX: $ α^2 $';
-
-/**
- * The timeout to wait for change activity to have ceased before rendering.
- */
-const RENDER_TIMEOUT = 1000;
-
-/**
- * The mime type for a rich contents drag object.
- */
-const CONTENTS_MIME_RICH = 'application/x-jupyter-icontentsrich';
-
-/** ****************************************************************************
- * Cell
- ******************************************************************************/
-
-/**
- * A base cell widget.
- */
-export class Cell<T extends ICellModel = ICellModel> extends Widget {
+export class StaticNotebook extends WindowedList {
   /**
-   * Construct a new base cell widget.
+   * Construct a notebook widget.
    */
-  constructor(options: Cell.IOptions<T>) {
-    super();
-    this.addClass(CELL_CLASS);
-    const model = (this._model = options.model);
+  constructor(options: StaticNotebook.IOptions) {
+    const cells = new Array<Cell>();
+    super({
+      model: new NotebookViewModel(cells, {
+        overscanCount:
+          options.notebookConfig?.overscanCount ??
+          StaticNotebook.defaultNotebookConfig.overscanCount,
+        windowingActive:
+          (options.notebookConfig?.windowingMode ??
+            StaticNotebook.defaultNotebookConfig.windowingMode) === 'full'
+      }),
+      layout: new NotebookWindowedLayout()
+    });
+    this.addClass(NB_CLASS);
+    this.cellsArray = cells;
 
+    this._idleCallBack = null;
+
+    this._editorConfig = StaticNotebook.defaultEditorConfig;
+    this._notebookConfig = StaticNotebook.defaultNotebookConfig;
+    this._mimetype = 'text/plain';
+    this._notebookModel = null;
+    this._modelChanged = new Signal<this, void>(this);
+    this._modelContentChanged = new Signal<this, void>(this);
+
+    this.node.dataset[KERNEL_USER] = 'true';
+    this.node.dataset[UNDOER] = 'true';
+    this.node.dataset[CODE_RUNNER] = 'true';
+    this.rendermime = options.rendermime;
+    this.translator = options.translator || nullTranslator;
     this.contentFactory = options.contentFactory;
-    this.layout = options.layout ?? new PanelLayout();
-    // Set up translator for aria labels
-    this.translator = options.translator ?? nullTranslator;
+    this.editorConfig =
+      options.editorConfig || StaticNotebook.defaultEditorConfig;
+    this.notebookConfig =
+      options.notebookConfig || StaticNotebook.defaultNotebookConfig;
+    this._updateNotebookConfig();
+    this._mimetypeService = options.mimeTypeService;
+    this.renderingLayout = options.notebookConfig?.renderingLayout;
+  }
 
-    this._editorConfig = options.editorConfig ?? {};
-    this._placeholder = true;
-    this._inViewport = false;
-    this.placeholder = options.placeholder ?? true;
+  get cellCollapsed(): ISignal<this, Cell> {
+    return this._cellCollapsed;
+  }
 
-    model.metadataChanged.connect(this.onMetadataChanged, this);
+  get cellInViewportChanged(): ISignal<this, Cell> {
+    return this._cellInViewportChanged;
   }
 
   /**
-   * Initialize view state from model.
+   * A signal emitted when the model of the notebook changes.
+   */
+  get modelChanged(): ISignal<this, void> {
+    return this._modelChanged;
+  }
+
+  /**
+   * A signal emitted when the model content changes.
    *
    * #### Notes
-   * Should be called after construction. For convenience, returns this, so it
-   * can be chained in the construction, like `new Foo().initializeState();`
+   * This is a convenience signal that follows the current model.
    */
-  initializeState(): this {
-    this.loadCollapseState();
-    this.loadEditableState();
-    return this;
+  get modelContentChanged(): ISignal<this, void> {
+    return this._modelContentChanged;
   }
 
   /**
-   * The content factory used by the widget.
+   * A signal emitted when the rendering layout of the notebook changes.
    */
-  readonly contentFactory: Cell.IContentFactory;
-
-  /**
-   * Signal to indicate that widget has changed visibly (in size, in type, etc)
-   */
-  get displayChanged(): ISignal<this, void> {
-    return this._displayChanged;
+  get renderingLayoutChanged(): ISignal<this, RenderingLayout> {
+    return this._renderingLayoutChanged;
   }
 
   /**
-   * Whether the cell is in viewport or not.
+   * The cell factory used by the widget.
    */
-  get inViewport(): boolean {
-    return this._inViewport;
+  readonly contentFactory: StaticNotebook.IContentFactory;
+
+  /**
+   * The Rendermime instance used by the widget.
+   */
+  readonly rendermime: IRenderMimeRegistry;
+
+  /**
+   * Translator to be used by cell renderers
+   */
+  readonly translator: ITranslator;
+
+  /**
+   * The model for the widget.
+   */
+  get model(): INotebookModel | null {
+    return this._notebookModel;
   }
-  set inViewport(v: boolean) {
-    if (this._inViewport !== v) {
-      this._inViewport = v;
-      this._inViewportChanged.emit(this._inViewport);
+  set model(newValue: INotebookModel | null) {
+    newValue = newValue || null;
+    if (this._notebookModel === newValue) {
+      return;
     }
+    const oldValue = this._notebookModel;
+    this._notebookModel = newValue;
+    // Trigger private, protected, and public changes.
+    this._onModelChanged(oldValue, newValue);
+    this.onModelChanged(oldValue, newValue);
+    this._modelChanged.emit(void 0);
+
+    // Trigger state change
+    this.viewModel.itemsList = newValue?.cells ?? null;
   }
 
   /**
-   * Will emit true just after the node is attached to the DOM
-   * Will emit false just before the node is detached of the DOM
+   * Get the mimetype for code cells.
    */
-  get inViewportChanged(): ISignal<Cell, boolean> {
-    return this._inViewportChanged;
+  get codeMimetype(): string {
+    return this._mimetype;
   }
 
   /**
-   * Whether the cell is a placeholder not yet fully rendered or not.
+   * A read-only sequence of the widgets in the notebook.
    */
-  protected get placeholder(): boolean {
-    return this._placeholder;
-  }
-  protected set placeholder(v: boolean) {
-    if (this._placeholder !== v && v === false) {
-      this.initializeDOM();
-      this._placeholder = v;
-      this._ready.resolve();
-    }
+  get widgets(): ReadonlyArray<Cell> {
+    return this.cellsArray as ReadonlyArray<Cell>;
   }
 
   /**
-   * Get the prompt node used by the cell.
+   * A configuration object for cell editor settings.
    */
-  get promptNode(): HTMLElement | null {
-    if (this.placeholder) {
-      return null;
-    }
-
-    if (!this._inputHidden) {
-      return this._input!.promptNode;
-    } else {
-      return (this._inputPlaceholder!.node as HTMLElement)
-        .firstElementChild as HTMLElement;
-    }
-  }
-
-  /**
-   * Get the CodeEditorWrapper used by the cell.
-   */
-  get editorWidget(): CodeEditorWrapper | null {
-    return this._input?.editorWidget ?? null;
-  }
-
-  /**
-   * Get the CodeEditor used by the cell.
-   */
-  get editor(): CodeEditor.IEditor | null {
-    return this._input?.editor ?? null;
-  }
-
-  /**
-   * Editor configuration
-   */
-  get editorConfig(): Record<string, any> {
+  get editorConfig(): StaticNotebook.IEditorConfig {
     return this._editorConfig;
   }
-
-  /**
-   * Cell headings
-   */
-  get headings(): Cell.IHeading[] {
-    return new Array<Cell.IHeading>();
+  set editorConfig(value: StaticNotebook.IEditorConfig) {
+    this._editorConfig = value;
+    this._updateEditorConfig();
   }
 
   /**
-   * Get the model used by the cell.
+   * A configuration object for notebook settings.
    */
-  get model(): T {
-    return this._model;
+  get notebookConfig(): StaticNotebook.INotebookConfig {
+    return this._notebookConfig;
+  }
+  set notebookConfig(value: StaticNotebook.INotebookConfig) {
+    this._notebookConfig = value;
+    this._updateNotebookConfig();
   }
 
-  /**
-   * Get the input area for the cell.
-   */
-  get inputArea(): InputArea | null {
-    return this._input;
+  get renderingLayout(): RenderingLayout | undefined {
+    return this._renderingLayout;
   }
-
-  /**
-   * The read only state of the cell.
-   */
-  get readOnly(): boolean {
-    return this._readOnly;
-  }
-  set readOnly(value: boolean) {
-    if (value === this._readOnly) {
-      return;
-    }
-    this._readOnly = value;
-    if (this.syncEditable) {
-      this.saveEditableState();
-    }
-    this.update();
-  }
-
-  /**
-   * Whether the cell is a placeholder that defer rendering
-   *
-   * #### Notes
-   * You can wait for the promise `Cell.ready` to wait for the
-   * cell to be rendered.
-   */
-  isPlaceholder(): boolean {
-    return this.placeholder;
-  }
-
-  /**
-   * Save view editable state to model
-   */
-  saveEditableState(): void {
-    const { sharedModel } = this.model;
-    const current = sharedModel.getMetadata('editable') as unknown as boolean;
-
-    if (
-      (this.readOnly && current === false) ||
-      (!this.readOnly && current === undefined)
-    ) {
-      return;
-    }
-    if (this.readOnly) {
-      sharedModel.setMetadata('editable', false);
+  set renderingLayout(value: RenderingLayout | undefined) {
+    this._renderingLayout = value;
+    if (this._renderingLayout === 'side-by-side') {
+      this.node.classList.add(SIDE_BY_SIDE_CLASS);
     } else {
-      sharedModel.deleteMetadata('editable');
+      this.node.classList.remove(SIDE_BY_SIDE_CLASS);
     }
-  }
-
-  /**
-   * Load view editable state from model.
-   */
-  loadEditableState(): void {
-    this.readOnly =
-      (this.model.sharedModel.getMetadata('editable') as unknown as boolean) ===
-      false;
-  }
-
-  /**
-   * A promise that resolves when the widget renders for the first time.
-   */
-  get ready(): Promise<void> {
-    return this._ready.promise;
-  }
-
-  /**
-   * Set the prompt for the widget.
-   */
-  setPrompt(value: string): void {
-    this.prompt = value;
-    this._input?.setPrompt(value);
-  }
-
-  /**
-   * The view state of input being hidden.
-   */
-  get inputHidden(): boolean {
-    return this._inputHidden;
-  }
-  set inputHidden(value: boolean) {
-    if (this._inputHidden === value) {
-      return;
-    }
-    if (!this.placeholder) {
-      const layout = this._inputWrapper!.layout as PanelLayout;
-      if (value) {
-        this._input!.parent = null;
-        layout.addWidget(this._inputPlaceholder!);
-      } else {
-        this._inputPlaceholder!.parent = null;
-        layout.addWidget(this._input!);
-      }
-    }
-    this._inputHidden = value;
-    if (this.syncCollapse) {
-      this.saveCollapseState();
-    }
-    this.handleInputHidden(value);
-  }
-
-  /**
-   * Save view collapse state to model
-   */
-  saveCollapseState(): void {
-    const jupyter = { ...(this.model.getMetadata('jupyter') as any) };
-
-    if (
-      (this.inputHidden && jupyter.source_hidden === true) ||
-      (!this.inputHidden && jupyter.source_hidden === undefined)
-    ) {
-      return;
-    }
-
-    if (this.inputHidden) {
-      jupyter.source_hidden = true;
-    } else {
-      delete jupyter.source_hidden;
-    }
-    if (Object.keys(jupyter).length === 0) {
-      this.model.deleteMetadata('jupyter');
-    } else {
-      this.model.setMetadata('jupyter', jupyter);
-    }
-  }
-
-  /**
-   * Revert view collapse state from model.
-   */
-  loadCollapseState(): void {
-    const jupyter = (this.model.getMetadata('jupyter') as any) ?? {};
-    this.inputHidden = !!jupyter.source_hidden;
-  }
-
-  /**
-   * Handle the input being hidden.
-   *
-   * #### Notes
-   * This is called by the `inputHidden` setter so that subclasses
-   * can perform actions upon the input being hidden without accessing
-   * private state.
-   */
-  protected handleInputHidden(value: boolean): void {
-    return;
-  }
-
-  /**
-   * Whether to sync the collapse state to the cell model.
-   */
-  get syncCollapse(): boolean {
-    return this._syncCollapse;
-  }
-  set syncCollapse(value: boolean) {
-    if (this._syncCollapse === value) {
-      return;
-    }
-    this._syncCollapse = value;
-    if (value) {
-      this.loadCollapseState();
-    }
-  }
-
-  /**
-   * Whether to sync the editable state to the cell model.
-   */
-  get syncEditable(): boolean {
-    return this._syncEditable;
-  }
-  set syncEditable(value: boolean) {
-    if (this._syncEditable === value) {
-      return;
-    }
-    this._syncEditable = value;
-    if (value) {
-      this.loadEditableState();
-    }
-  }
-
-  /**
-   * Clone the cell, using the same model.
-   */
-  clone(): Cell<T> {
-    const constructor = this.constructor as typeof Cell;
-    return new constructor({
-      model: this.model,
-      contentFactory: this.contentFactory,
-      placeholder: false,
-      translator: this.translator
-    });
+    this._renderingLayoutChanged.emit(this._renderingLayout ?? 'default');
   }
 
   /**
@@ -530,215 +355,611 @@ export class Cell<T extends ICellModel = ICellModel> extends Widget {
     if (this.isDisposed) {
       return;
     }
-    this._resizeDebouncer.dispose();
-    this._input = null!;
-    this._model = null!;
-    this._inputWrapper = null!;
-    this._inputPlaceholder = null!;
+    this._notebookModel = null;
+    (this.layout as NotebookWindowedLayout).header?.dispose();
     super.dispose();
   }
 
   /**
-   * Update the editor configuration with the partial provided dictionary.
+   * Move cells preserving widget view state.
    *
-   * @param v Partial editor configuration
+   * #### Notes
+   * This is required because at the model level a move is a deletion
+   * followed by an insertion. Hence the view state is not preserved.
+   *
+   * @param from The index of the cell to move
+   * @param to The new index of the cell
+   * @param n Number of cells to move
    */
-  updateEditorConfig(v: Record<string, any>): void {
-    this._editorConfig = { ...this._editorConfig, ...v };
-    if (this.editor) {
-      this.editor.setOptions(this._editorConfig);
-    }
-  }
-
-  /**
-   * Create children widgets.
-   */
-  protected initializeDOM(): void {
-    if (!this.placeholder) {
+  moveCell(from: number, to: number, n = 1): void {
+    if (!this.model) {
       return;
     }
 
-    const contentFactory = this.contentFactory;
-    const model = this._model;
+    const boundedTo = Math.min(this.model.cells.length - 1, Math.max(0, to));
 
-    // Header
-    const header = contentFactory.createCellHeader();
-    header.addClass(CELL_HEADER_CLASS);
-    (this.layout as PanelLayout).addWidget(header);
-
-    // Input
-    const inputWrapper = (this._inputWrapper = new Panel());
-    inputWrapper.addClass(CELL_INPUT_WRAPPER_CLASS);
-    const inputCollapser = new InputCollapser();
-    inputCollapser.addClass(CELL_INPUT_COLLAPSER_CLASS);
-    const input = (this._input = new InputArea({
-      model,
-      contentFactory,
-      editorOptions: this.getEditorOptions()
-    }));
-    input.addClass(CELL_INPUT_AREA_CLASS);
-    inputWrapper.addWidget(inputCollapser);
-    inputWrapper.addWidget(input);
-    (this.layout as PanelLayout).addWidget(inputWrapper);
-
-    this._inputPlaceholder = new InputPlaceholder(() => {
-      this.inputHidden = !this.inputHidden;
-    });
-
-    if (this.inputHidden) {
-      input.parent = null;
-      (inputWrapper.layout as PanelLayout).addWidget(this._inputPlaceholder!);
-    }
-
-    // Footer
-    const footer = this.contentFactory.createCellFooter();
-    footer.addClass(CELL_FOOTER_CLASS);
-    (this.layout as PanelLayout).addWidget(footer);
-  }
-
-  /**
-   * Get the editor options at initialization.
-   *
-   * @returns Editor options
-   */
-  protected getEditorOptions(): InputArea.IOptions['editorOptions'] {
-    return { config: this.editorConfig };
-  }
-
-  /**
-   * Handle `before-attach` messages.
-   */
-  protected onBeforeAttach(msg: Message): void {
-    if (this.placeholder) {
-      this.placeholder = false;
-    }
-  }
-
-  /**
-   * Handle `after-attach` messages.
-   */
-  protected onAfterAttach(msg: Message): void {
-    this.update();
-  }
-
-  /**
-   * Handle `'activate-request'` messages.
-   */
-  protected onActivateRequest(msg: Message): void {
-    this.editor?.focus();
-  }
-
-  /**
-   * Handle `resize` messages.
-   */
-  protected onResize(msg: Widget.ResizeMessage): void {
-    void this._resizeDebouncer.invoke();
-  }
-
-  /**
-   * Handle `update-request` messages.
-   */
-  protected onUpdateRequest(msg: Message): void {
-    if (!this._model) {
+    if (boundedTo === from) {
       return;
     }
-    // Handle read only state.
-    if (this.editor?.getOption('readOnly') !== this._readOnly) {
-      this.editor?.setOption('readOnly', this._readOnly);
+
+    const viewModel: { [k: string]: any }[] = new Array(n);
+    for (let i = 0; i < n; i++) {
+      viewModel[i] = {};
+      const oldCell = this.widgets[from + i];
+      if (oldCell.model.type === 'markdown') {
+        for (const k of ['rendered', 'headingCollapsed']) {
+          // @ts-expect-error Cell has no index signature
+          viewModel[i][k] = oldCell[k];
+        }
+      }
+    }
+
+    this.model!.sharedModel.moveCells(from, boundedTo, n);
+
+    for (let i = 0; i < n; i++) {
+      const newCell = this.widgets[to + i];
+      const view = viewModel[i];
+      for (const state in view) {
+        // @ts-expect-error Cell has no index signature
+        newCell[state] = view[state];
+      }
     }
   }
 
   /**
-   * Handle changes in the metadata.
+   * Force rendering the cell outputs of a given cell if it is still a placeholder.
+   *
+   * #### Notes
+   * The goal of this method is to allow search on cell outputs (that is based
+   * on DOM tree introspection).
+   *
+   * @param index The cell index
    */
-  protected onMetadataChanged(model: CellModel, args: IMapChange): void {
+  renderCellOutputs(index: number): void {
+    const cell = this.viewModel.widgetRenderer(index) as Cell;
+    if (cell instanceof CodeCell && cell.isPlaceholder()) {
+      cell.dataset.windowedListIndex = `${index}`;
+      this.layout.insertWidget(index, cell);
+      if (this.notebookConfig.windowingMode === 'full') {
+        // We need to delay slightly the removal to let codemirror properly initialize
+        requestAnimationFrame(() => {
+          this.layout.removeWidget(cell);
+        });
+      }
+    }
+  }
+
+  /**
+   * Adds a message to the notebook as a header.
+   */
+  protected addHeader(): void {
+    const trans = this.translator.load('jupyterlab');
+    const info = new Widget();
+    info.node.textContent = trans.__(
+      'The notebook is empty. Click the + button on the toolbar to add a new cell.'
+    );
+    (this.layout as NotebookWindowedLayout).header = info;
+  }
+
+  /**
+   * Removes the header.
+   */
+  protected removeHeader(): void {
+    (this.layout as NotebookWindowedLayout).header?.dispose();
+    (this.layout as NotebookWindowedLayout).header = null;
+  }
+
+  /**
+   * Handle a new model.
+   *
+   * #### Notes
+   * This method is called after the model change has been handled
+   * internally and before the `modelChanged` signal is emitted.
+   * The default implementation is a no-op.
+   */
+  protected onModelChanged(
+    oldValue: INotebookModel | null,
+    newValue: INotebookModel | null
+  ): void {
+    // No-op.
+  }
+
+  /**
+   * Handle changes to the notebook model content.
+   *
+   * #### Notes
+   * The default implementation emits the `modelContentChanged` signal.
+   */
+  protected onModelContentChanged(model: INotebookModel, args: void): void {
+    this._modelContentChanged.emit(void 0);
+  }
+
+  /**
+   * Handle changes to the notebook model metadata.
+   *
+   * #### Notes
+   * The default implementation updates the mimetypes of the code cells
+   * when the `language_info` metadata changes.
+   */
+  protected onMetadataChanged(sender: INotebookModel, args: IMapChange): void {
     switch (args.key) {
-      case 'jupyter':
-        if (this.syncCollapse) {
-          this.loadCollapseState();
-        }
-        break;
-      case 'editable':
-        if (this.syncEditable) {
-          this.loadEditableState();
-        }
+      case 'language_info':
+        this._updateMimetype();
         break;
       default:
         break;
     }
   }
 
-  protected prompt = '';
-  protected translator: ITranslator;
-  protected _displayChanged = new Signal<this, void>(this);
+  /**
+   * Handle a cell being inserted.
+   *
+   * The default implementation is a no-op
+   */
+  protected onCellInserted(index: number, cell: Cell): void {
+    // This is a no-op.
+  }
 
-  private _editorConfig: Record<string, any> = {};
-  private _input: InputArea | null;
-  private _inputHidden = false;
-  private _inputWrapper: Widget | null;
-  private _inputPlaceholder: InputPlaceholder | null;
-  private _inViewport: boolean;
-  private _inViewportChanged: Signal<Cell, boolean> = new Signal<Cell, boolean>(
-    this
-  );
-  private _model: T;
-  private _placeholder: boolean;
-  private _readOnly = false;
-  private _ready = new PromiseDelegate<void>();
-  private _resizeDebouncer = new Debouncer(() => {
-    this._displayChanged.emit();
-  }, 0);
-  private _syncCollapse = false;
-  private _syncEditable = false;
+  /**
+   * Handle a cell being removed.
+   *
+   * The default implementation is a no-op
+   */
+  protected onCellRemoved(index: number, cell: Cell): void {
+    // This is a no-op.
+  }
+
+  /**
+   * A message handler invoked on an `'update-request'` message.
+   *
+   * #### Notes
+   * The default implementation of this handler is a no-op.
+   */
+  protected onUpdateRequest(msg: Message): void {
+    if (this.notebookConfig.windowingMode === 'defer') {
+      void this._updateForDeferMode();
+    } else {
+      super.onUpdateRequest(msg);
+    }
+  }
+
+  /**
+   * Handle a new model on the widget.
+   */
+  private _onModelChanged(
+    oldValue: INotebookModel | null,
+    newValue: INotebookModel | null
+  ): void {
+    if (oldValue) {
+      oldValue.contentChanged.disconnect(this.onModelContentChanged, this);
+      oldValue.metadataChanged.disconnect(this.onMetadataChanged, this);
+      oldValue.cells.changed.disconnect(this._onCellsChanged, this);
+      while (this.cellsArray.length) {
+        this._removeCell(0);
+      }
+    }
+    if (!newValue) {
+      this._mimetype = 'text/plain';
+      return;
+    }
+    this._updateMimetype();
+    const cells = newValue.cells;
+    const collab = newValue.collaborative ?? false;
+    if (!collab && !cells.length) {
+      newValue.sharedModel.insertCell(0, {
+        cell_type: this.notebookConfig.defaultCell
+      });
+    }
+    let index = -1;
+    for (const cell of cells) {
+      this._insertCell(++index, cell);
+    }
+    newValue.cells.changed.connect(this._onCellsChanged, this);
+    newValue.metadataChanged.connect(this.onMetadataChanged, this);
+    newValue.contentChanged.connect(this.onModelContentChanged, this);
+  }
+
+  /**
+   * Handle a change cells event.
+   */
+  protected _onCellsChanged(
+    sender: CellList,
+    args: IObservableList.IChangedArgs<ICellModel>
+  ): void {
+    this.removeHeader();
+    switch (args.type) {
+      case 'add': {
+        let index = 0;
+        index = args.newIndex;
+        for (const value of args.newValues) {
+          this._insertCell(index++, value);
+        }
+        this._updateDataWindowedListIndex(
+          args.newIndex,
+          this.model!.cells.length,
+          args.newValues.length
+        );
+        break;
+      }
+      case 'remove':
+        for (let length = args.oldValues.length; length > 0; length--) {
+          this._removeCell(args.oldIndex);
+        }
+        this._updateDataWindowedListIndex(
+          args.oldIndex,
+          this.model!.cells.length + args.oldValues.length,
+          -1 * args.oldValues.length
+        );
+        // Add default cell if there are no cells remaining.
+        if (!sender.length) {
+          const model = this.model;
+          // Add the cell in a new context to avoid triggering another
+          // cell changed event during the handling of this signal.
+          requestAnimationFrame(() => {
+            if (model && !model.isDisposed && !model.sharedModel.cells.length) {
+              model.sharedModel.insertCell(0, {
+                cell_type: this.notebookConfig.defaultCell
+              });
+            }
+          });
+        }
+        break;
+      default:
+        return;
+    }
+
+    if (!this.model!.sharedModel.cells.length) {
+      this.addHeader();
+    }
+
+    this.update();
+  }
+
+  /**
+   * Create a cell widget and insert into the notebook.
+   */
+  private _insertCell(index: number, cell: ICellModel): void {
+    let widget: Cell;
+    switch (cell.type) {
+      case 'code':
+        widget = this._createCodeCell(cell as ICodeCellModel);
+        widget.model.mimeType = this._mimetype;
+        break;
+      case 'markdown':
+        widget = this._createMarkdownCell(cell as IMarkdownCellModel);
+        if (cell.sharedModel.getSource() === '') {
+          (widget as MarkdownCell).rendered = false;
+        }
+        break;
+      default:
+        widget = this._createRawCell(cell as IRawCellModel);
+    }
+    widget.inViewportChanged.connect(this._onCellInViewportChanged, this);
+    widget.addClass(NB_CELL_CLASS);
+
+    ArrayExt.insert(this.cellsArray, index, widget);
+    this.onCellInserted(index, widget);
+
+    this._scheduleCellRenderOnIdle();
+  }
+
+  /**
+   * Create a code cell widget from a code cell model.
+   */
+  private _createCodeCell(model: ICodeCellModel): CodeCell {
+    const rendermime = this.rendermime;
+    const contentFactory = this.contentFactory;
+    const editorConfig = this.editorConfig.code;
+    const options: CodeCell.IOptions = {
+      contentFactory,
+      editorConfig,
+      inputHistoryScope: this.notebookConfig.inputHistoryScope,
+      maxNumberOutputs: this.notebookConfig.maxNumberOutputs,
+      model,
+      placeholder: this._notebookConfig.windowingMode !== 'none',
+      rendermime,
+      translator: this.translator
+    };
+    const cell = this.contentFactory.createCodeCell(options);
+    cell.syncCollapse = true;
+    cell.syncEditable = true;
+    cell.syncScrolled = true;
+    cell.outputArea.inputRequested.connect(() => {
+      this._onInputRequested(cell).catch(reason => {
+        console.error('Failed to scroll to cell requesting input.', reason);
+      });
+    });
+    return cell;
+  }
+
+  /**
+   * Create a markdown cell widget from a markdown cell model.
+   */
+  private _createMarkdownCell(model: IMarkdownCellModel): MarkdownCell {
+    const rendermime = this.rendermime;
+    const contentFactory = this.contentFactory;
+    const editorConfig = this.editorConfig.markdown;
+    const options: MarkdownCell.IOptions = {
+      contentFactory,
+      editorConfig,
+      model,
+      placeholder: this._notebookConfig.windowingMode !== 'none',
+      rendermime,
+      showEditorForReadOnlyMarkdown:
+        this._notebookConfig.showEditorForReadOnlyMarkdown
+    };
+    const cell = this.contentFactory.createMarkdownCell(options);
+    cell.syncCollapse = true;
+    cell.syncEditable = true;
+    // Connect collapsed signal for each markdown cell widget
+    cell.headingCollapsedChanged.connect(this._onCellCollapsed, this);
+    return cell;
+  }
+
+  /**
+   * Create a raw cell widget from a raw cell model.
+   */
+  private _createRawCell(model: IRawCellModel): RawCell {
+    const contentFactory = this.contentFactory;
+    const editorConfig = this.editorConfig.raw;
+    const options: RawCell.IOptions = {
+      editorConfig,
+      model,
+      contentFactory,
+      placeholder: this._notebookConfig.windowingMode !== 'none'
+    };
+    const cell = this.contentFactory.createRawCell(options);
+    cell.syncCollapse = true;
+    cell.syncEditable = true;
+    return cell;
+  }
+
+  /**
+   * Remove a cell widget.
+   */
+  private _removeCell(index: number): void {
+    const widget = this.cellsArray[index];
+    widget.parent = null;
+    ArrayExt.removeAt(this.cellsArray, index);
+    this.onCellRemoved(index, widget);
+    widget.dispose();
+  }
+
+  /**
+   * Update the mimetype of the notebook.
+   */
+  private _updateMimetype(): void {
+    const info = this._notebookModel?.getMetadata('language_info');
+    if (!info) {
+      return;
+    }
+    this._mimetype = this._mimetypeService.getMimeTypeByLanguage(info);
+    for (const widget of this.widgets) {
+      if (widget.model.type === 'code') {
+        widget.model.mimeType = this._mimetype;
+      }
+    }
+  }
+
+  /**
+   * Callback when a cell collapsed status changes.
+   *
+   * @param cell Cell changed
+   * @param collapsed New collapsed status
+   */
+  private _onCellCollapsed(cell: Cell, collapsed: boolean): void {
+    NotebookActions.setHeadingCollapse(cell, collapsed, this);
+    this._cellCollapsed.emit(cell);
+  }
+
+  /**
+   * Callback when a cell viewport status changes.
+   *
+   * @param cell Cell changed
+   */
+  private _onCellInViewportChanged(cell: Cell): void {
+    this._cellInViewportChanged.emit(cell);
+  }
+
+  /**
+   * Ensure to load in the DOM a cell requesting an user input
+   *
+   * @param cell Cell requesting an input
+   */
+  private async _onInputRequested(cell: Cell): Promise<void> {
+    if (!cell.inViewport) {
+      const cellIndex = this.widgets.findIndex(c => c === cell);
+      if (cellIndex >= 0) {
+        await this.scrollToItem(cellIndex);
+
+        const inputEl = cell.node.querySelector('.jp-Stdin');
+        if (inputEl) {
+          ElementExt.scrollIntoViewIfNeeded(this.node, inputEl);
+          (inputEl as HTMLElement).focus();
+        }
+      }
+    }
+  }
+
+  private _scheduleCellRenderOnIdle() {
+    if (this.notebookConfig.windowingMode === 'defer' && !this.isDisposed) {
+      if (!this._idleCallBack) {
+        this._idleCallBack = requestIdleCallback(
+          (deadline: IdleDeadline) => {
+            this._idleCallBack = null;
+
+            // In case of timeout, render for some time even if it means freezing the UI
+            // This avoids the cells to never be loaded.
+            void this._updateForDeferMode(
+              deadline.didTimeout
+                ? MAXIMUM_TIME_REMAINING
+                : deadline.timeRemaining()
+            );
+          },
+          {
+            timeout: 3000
+          }
+        );
+      }
+    }
+  }
+
+  private _updateDataWindowedListIndex(
+    start: number,
+    end: number,
+    delta: number
+  ): void {
+    for (
+      let cellIdx = 0;
+      cellIdx < this.viewportNode.childElementCount;
+      cellIdx++
+    ) {
+      const cell = this.viewportNode.children[cellIdx];
+      const globalIndex = parseInt(
+        (cell as HTMLElement).dataset.windowedListIndex!,
+        10
+      );
+      if (globalIndex >= start && globalIndex < end) {
+        (cell as HTMLElement).dataset.windowedListIndex = `${
+          globalIndex + delta
+        }`;
+      }
+    }
+  }
+
+  /**
+   * Update editor settings for notebook cells.
+   */
+  private _updateEditorConfig() {
+    for (let i = 0; i < this.widgets.length; i++) {
+      const cell = this.widgets[i];
+      let config: Record<string, any> = {};
+      switch (cell.model.type) {
+        case 'code':
+          config = this._editorConfig.code;
+          break;
+        case 'markdown':
+          config = this._editorConfig.markdown;
+          break;
+        default:
+          config = this._editorConfig.raw;
+          break;
+      }
+      cell.updateEditorConfig({ ...config });
+    }
+  }
+
+  private async _updateForDeferMode(
+    remainingTime: number = MAXIMUM_TIME_REMAINING
+  ): Promise<void> {
+    const startTime = Date.now();
+    let cellIdx = 0;
+    while (
+      Date.now() - startTime < remainingTime &&
+      cellIdx < this.cellsArray.length
+    ) {
+      const cell = this.cellsArray[cellIdx];
+      if (cell.isPlaceholder()) {
+        cell.dataset.windowedListIndex = `${cellIdx}`;
+        this.layout.insertWidget(cellIdx, cell);
+        await cell.ready;
+      }
+      cellIdx++;
+    }
+
+    if (cellIdx < this.cellsArray.length) {
+      this._scheduleCellRenderOnIdle();
+    } else {
+      if (this._idleCallBack) {
+        window.cancelIdleCallback(this._idleCallBack);
+        this._idleCallBack = null;
+      }
+    }
+  }
+
+  /**
+   * Apply updated notebook settings.
+   */
+  private _updateNotebookConfig() {
+    // Apply scrollPastEnd setting.
+    this.toggleClass(
+      'jp-mod-scrollPastEnd',
+      this._notebookConfig.scrollPastEnd
+    );
+    // Control visibility of heading collapser UI
+    this.toggleClass(
+      HEADING_COLLAPSER_VISBILITY_CONTROL_CLASS,
+      this._notebookConfig.showHiddenCellsButton
+    );
+    // Control editor visibility for read-only Markdown cells
+    const showEditorForReadOnlyMarkdown =
+      this._notebookConfig.showEditorForReadOnlyMarkdown;
+    if (showEditorForReadOnlyMarkdown !== undefined) {
+      for (const cell of this.cellsArray) {
+        if (cell.model.type === 'markdown') {
+          (cell as MarkdownCell).showEditorForReadOnly =
+            showEditorForReadOnlyMarkdown;
+        }
+      }
+    }
+
+    this.viewModel.windowingActive =
+      this._notebookConfig.windowingMode === 'full';
+  }
+
+  protected cellsArray: Array<Cell>;
+
+  private _cellCollapsed = new Signal<this, Cell>(this);
+  private _cellInViewportChanged = new Signal<this, Cell>(this);
+  private _editorConfig: StaticNotebook.IEditorConfig;
+  private _idleCallBack: number | null;
+  private _mimetype: string;
+  private _mimetypeService: IEditorMimeTypeService;
+  private _modelChanged: Signal<this, void>;
+  private _modelContentChanged: Signal<this, void>;
+  private _notebookConfig: StaticNotebook.INotebookConfig;
+  private _notebookModel: INotebookModel | null;
+  private _renderingLayout: RenderingLayout | undefined;
+  private _renderingLayoutChanged = new Signal<this, RenderingLayout>(this);
 }
 
 /**
- * The namespace for the `Cell` class statics.
+ * The namespace for the `StaticNotebook` class statics.
  */
-export namespace Cell {
+export namespace StaticNotebook {
   /**
-   * An options object for initializing a cell widget.
+   * An options object for initializing a static notebook.
    */
-  export interface IOptions<T extends ICellModel> {
+  export interface IOptions {
     /**
-     * The model used by the cell.
+     * The rendermime instance used by the widget.
      */
-    model: T;
+    rendermime: IRenderMimeRegistry;
 
     /**
-     * The factory object for customizable cell children.
+     * The language preference for the model.
+     */
+    languagePreference?: string;
+
+    /**
+     * A factory for creating content.
      */
     contentFactory: IContentFactory;
 
     /**
-     * The configuration options for the text editor widget.
+     * A configuration object for the cell editor settings.
      */
-    editorConfig?: Record<string, any>;
+    editorConfig?: IEditorConfig;
 
     /**
-     * Editor extensions to be added.
+     * A configuration object for notebook settings.
      */
-    editorExtensions?: Extension[];
+    notebookConfig?: INotebookConfig;
 
     /**
-     * Cell widget layout.
+     * The service used to look up mime types.
      */
-    layout?: PanelLayout;
-
-    /**
-     * The maximum number of output items to display in cell output.
-     */
-    maxNumberOutputs?: number;
-
-    /**
-     * Whether to split stdin line history by kernel session or keep globally accessible.
-     */
-    inputHistoryScope?: 'global' | 'session';
-
-    /**
-     * Whether this cell is a placeholder for future rendering.
-     */
-    placeholder?: boolean;
+    mimeTypeService: IEditorMimeTypeService;
 
     /**
      * The application language translator.
@@ -747,820 +968,758 @@ export namespace Cell {
   }
 
   /**
-   * Cell heading
+   * A factory for creating notebook content.
+   *
+   * #### Notes
+   * This extends the content factory of the cell itself, which extends the content
+   * factory of the output area and input area. The result is that there is a single
+   * factory for creating all child content of a notebook.
    */
-  export interface IHeading {
+  export interface IContentFactory extends Cell.IContentFactory {
     /**
-     * Heading text.
+     * Create a new code cell widget.
      */
-    text: string;
+    createCodeCell(options: CodeCell.IOptions): CodeCell;
 
     /**
-     * HTML heading level.
+     * Create a new markdown cell widget.
      */
-    level: number;
+    createMarkdownCell(options: MarkdownCell.IOptions): MarkdownCell;
 
     /**
-     * Index of the output containing the heading
+     * Create a new raw cell widget.
      */
-    outputIndex?: number;
-
-    /**
-     * Type of heading
-     */
-    type: HeadingType;
+    createRawCell(options: RawCell.IOptions): RawCell;
   }
 
   /**
-   * Type of headings
+   * A config object for the cell editors.
    */
-  export enum HeadingType {
+  export interface IEditorConfig {
     /**
-     * Heading from HTML output
+     * Config options for code cells.
      */
-    HTML,
+    readonly code: Record<string, any>;
     /**
-     * Heading from Markdown cell or Markdown output
+     * Config options for markdown cells.
      */
-    Markdown
+    readonly markdown: Record<string, any>;
+    /**
+     * Config options for raw cells.
+     */
+    readonly raw: Record<string, any>;
   }
 
   /**
-   * The factory object for customizable cell children.
-   *
-   * This is used to allow users of cells to customize child content.
-   *
-   * This inherits from `OutputArea.IContentFactory` to avoid needless nesting and
-   * provide a single factory object for all notebook/cell/outputarea related
-   * widgets.
+   * Default configuration options for cell editors.
    */
-  export interface IContentFactory
-    extends OutputArea.IContentFactory,
-      InputArea.IContentFactory {
+  export const defaultEditorConfig: IEditorConfig = {
+    code: {
+      lineNumbers: false,
+      lineWrap: false,
+      matchBrackets: true
+    },
+    markdown: {
+      lineNumbers: false,
+      lineWrap: true,
+      matchBrackets: false
+    },
+    raw: {
+      lineNumbers: false,
+      lineWrap: true,
+      matchBrackets: false
+    }
+  };
+
+  /**
+   * A config object for the notebook widget
+   */
+  export interface INotebookConfig {
     /**
-     * Create a new cell header for the parent widget.
+     * The default type for new notebook cells.
      */
-    createCellHeader(): ICellHeader;
+    defaultCell: nbformat.CellType;
 
     /**
-     * Create a new cell header for the parent widget.
+     * Defines if the document can be undo/redo.
      */
-    createCellFooter(): ICellFooter;
+    disableDocumentWideUndoRedo: boolean;
+
+    /**
+     * Defines the maximum number of outputs per cell.
+     */
+    maxNumberOutputs: number;
+
+    /**
+     * Whether to split stdin line history by kernel session or keep globally accessible.
+     */
+    inputHistoryScope: 'global' | 'session';
+
+    /**
+     * Number of cells to render in addition to those
+     * visible in the viewport.
+     *
+     * ### Notes
+     * In 'full' windowing mode, this is the number of cells above and below the
+     * viewport.
+     * In 'defer' windowing mode, this is the number of cells to render initially
+     * in addition to the one of the viewport.
+     */
+    overscanCount: number;
+
+    /**
+     * Should timing be recorded in metadata
+     */
+    recordTiming: boolean;
+
+    /**
+     * Defines the rendering layout to use.
+     */
+    renderingLayout: RenderingLayout;
+
+    /**
+     * Enable scrolling past the last cell
+     */
+    scrollPastEnd: boolean;
+
+    /**
+     * Show hidden cells button if collapsed
+     */
+    showHiddenCellsButton: boolean;
+
+    /**
+     * Should an editor be shown for read-only markdown
+     */
+    showEditorForReadOnlyMarkdown?: boolean;
+
+    /**
+     * Override the side-by-side left margin.
+     */
+    sideBySideLeftMarginOverride: string;
+
+    /**
+     * Override the side-by-side right margin.
+     */
+    sideBySideRightMarginOverride: string;
+
+    /**
+     * Side-by-side output ratio.
+     */
+    sideBySideOutputRatio: number;
+
+    /**
+     * Windowing mode
+     *
+     * - 'defer': Wait for idle CPU cycles to attach out of viewport cells
+     * - 'full': Attach to the DOM only cells in viewport
+     * - 'none': Attach all cells to the viewport
+     */
+    windowingMode: 'defer' | 'full' | 'none';
   }
+
+  /**
+   * Default configuration options for notebooks.
+   */
+  export const defaultNotebookConfig: INotebookConfig = {
+    showHiddenCellsButton: true,
+    scrollPastEnd: true,
+    defaultCell: 'code',
+    recordTiming: false,
+    inputHistoryScope: 'global',
+    maxNumberOutputs: 50,
+    showEditorForReadOnlyMarkdown: true,
+    disableDocumentWideUndoRedo: true,
+    renderingLayout: 'default',
+    sideBySideLeftMarginOverride: '10px',
+    sideBySideRightMarginOverride: '10px',
+    sideBySideOutputRatio: 1,
+    overscanCount: 1,
+    windowingMode: 'full'
+  };
 
   /**
    * The default implementation of an `IContentFactory`.
-   *
-   * This includes a CodeMirror editor factory to make it easy to use out of the box.
    */
-  export class ContentFactory implements IContentFactory {
+  export class ContentFactory
+    extends Cell.ContentFactory
+    implements IContentFactory
+  {
     /**
-     * Create a content factory for a cell.
+     * Create a new code cell widget.
+     *
+     * #### Notes
+     * If no cell content factory is passed in with the options, the one on the
+     * notebook content factory is used.
      */
-    constructor(options: ContentFactory.IOptions) {
-      this._editorFactory = options.editorFactory;
+    createCodeCell(options: CodeCell.IOptions): CodeCell {
+      return new CodeCell(options).initializeState();
     }
 
     /**
-     * The readonly editor factory that create code editors
+     * Create a new markdown cell widget.
+     *
+     * #### Notes
+     * If no cell content factory is passed in with the options, the one on the
+     * notebook content factory is used.
      */
-    get editorFactory(): CodeEditor.Factory {
-      return this._editorFactory;
+    createMarkdownCell(options: MarkdownCell.IOptions): MarkdownCell {
+      return new MarkdownCell(options).initializeState();
     }
 
     /**
-     * Create a new cell header for the parent widget.
+     * Create a new raw cell widget.
+     *
+     * #### Notes
+     * If no cell content factory is passed in with the options, the one on the
+     * notebook content factory is used.
      */
-    createCellHeader(): ICellHeader {
-      return new CellHeader();
+    createRawCell(options: RawCell.IOptions): RawCell {
+      return new RawCell(options).initializeState();
     }
-
-    /**
-     * Create a new cell footer for the parent widget.
-     */
-    createCellFooter(): ICellFooter {
-      return new CellFooter();
-    }
-
-    /**
-     * Create an input prompt.
-     */
-    createInputPrompt(): IInputPrompt {
-      return new InputPrompt();
-    }
-
-    /**
-     * Create the output prompt for the widget.
-     */
-    createOutputPrompt(): IOutputPrompt {
-      return new OutputPrompt();
-    }
-
-    /**
-     * Create an stdin widget.
-     */
-    createStdin(options: Stdin.IOptions): IStdin {
-      return new Stdin(options);
-    }
-
-    private _editorFactory: CodeEditor.Factory;
   }
 
   /**
-   * A namespace for cell content factory.
+   * A namespace for the static notebook content factory.
    */
   export namespace ContentFactory {
     /**
      * Options for the content factory.
      */
-    export interface IOptions {
-      /**
-       * The editor factory used by the content factory.
-       */
-      editorFactory: CodeEditor.Factory;
-    }
-  }
-}
-
-/** ****************************************************************************
- * CodeCell
- ******************************************************************************/
-
-/**
- * Code cell layout
- *
- * It will not detached the output area when the cell is detached.
- */
-export class CodeCellLayout extends PanelLayout {
-  /**
-   * A message handler invoked on a `'before-attach'` message.
-   *
-   * #### Notes
-   * The default implementation of this method forwards the message
-   * to all widgets. It assumes all widget nodes are attached to the
-   * parent widget node.
-   *
-   * This may be reimplemented by subclasses as needed.
-   */
-  protected onBeforeAttach(msg: Message): void {
-    let beforeOutputArea = true;
-    const outputAreaWrapper = this.parent!.node.firstElementChild;
-    for (const widget of this) {
-      if (outputAreaWrapper) {
-        if (widget.node === outputAreaWrapper) {
-          beforeOutputArea = false;
-        } else {
-          MessageLoop.sendMessage(widget, msg);
-
-          if (beforeOutputArea) {
-            this.parent!.node.insertBefore(widget.node, outputAreaWrapper);
-          } else {
-            this.parent!.node.appendChild(widget.node);
-          }
-
-          // Force setting isVisible to true as it requires the parent widget to be
-          // visible. But that flag will be set only during the `onAfterAttach` call.
-          if (!this.parent!.isHidden) {
-            widget.setFlag(Widget.Flag.IsVisible);
-          }
-
-          // Not called in NotebookWindowedLayout to avoid outputArea
-          // widgets unwanted update or reset.
-          MessageLoop.sendMessage(widget, Widget.Msg.AfterAttach);
-        }
-      }
-    }
-  }
-
-  /**
-   * A message handler invoked on an `'after-detach'` message.
-   *
-   * #### Notes
-   * The default implementation of this method forwards the message
-   * to all widgets. It assumes all widget nodes are attached to the
-   * parent widget node.
-   *
-   * This may be reimplemented by subclasses as needed.
-   */
-  protected onAfterDetach(msg: Message): void {
-    for (const widget of this) {
-      // TODO we could improve this further by removing outputs based
-      // on their mime type (for example plain/text or markdown could safely be detached)
-      // If the cell is out of the view port, its children are already detached -> skip detaching
-      if (
-        !widget.hasClass(CELL_OUTPUT_WRAPPER_CLASS) &&
-        widget.node.isConnected
-      ) {
-        // Not called in NotebookWindowedLayout for windowed notebook
-        MessageLoop.sendMessage(widget, Widget.Msg.BeforeDetach);
-
-        this.parent!.node.removeChild(widget.node);
-
-        MessageLoop.sendMessage(widget, msg);
-      }
-    }
+    export interface IOptions extends Cell.ContentFactory.IOptions {}
   }
 }
 
 /**
- * A widget for a code cell.
+ * A notebook widget that supports interactivity.
  */
-export class CodeCell extends Cell<ICodeCellModel> {
-  private _createAIButton(): HTMLElement {
-    const button = document.createElement('button');
-    button.className = 'ai-button';
-    button.textContent = 'AI Button';
-    button.title = 'Send to ChatGPT API';
-    button.onclick = () => {
-      // TODO: Implement the onClick event handler to send the cell content to ChatGPT API and print the output in the next cell.
-    };
-    return button;
-  }
-  
+export class Notebook extends StaticNotebook {
   /**
-   * Construct a code cell widget.
+   * Construct a notebook widget.
    */
-  constructor(options: CodeCell.IOptions) {
-    super({ layout: new CodeCellLayout(), ...options, placeholder: true });
-    this.addClass(CODE_CELL_CLASS);
-    const trans = this.translator.load('jupyterlab');
-    
-		const aiButton = this._createAIButton();
-    this.inputArea.node.insertBefore(aiButton, this.inputArea.node.firstChild);    
-
-    // Only save options not handled by parent constructor.
-    const rendermime = (this._rendermime = options.rendermime);
-    const contentFactory = this.contentFactory;
-    const model = this.model;
-    this.maxNumberOutputs = options.maxNumberOutputs;
-
-    // Note that modifying the below label warrants one to also modify
-    // the same in this._outputLengthHandler. Ideally, this label must
-    // have been a constant and used in both places but it is not done
-    // so because of limitations in the translation manager.
-    const ariaLabel =
-      model.outputs.length === 0
-        ? trans.__('Code Cell Content')
-        : trans.__('Code Cell Content with Output');
-    this.node.setAttribute('aria-label', ariaLabel);
-
-    const output = (this._output = new OutputArea({
-      model: this.model.outputs,
-      rendermime,
-      contentFactory: contentFactory,
-      maxNumberOutputs: this.maxNumberOutputs,
-      translator: this.translator,
-      promptOverlay: true,
-      inputHistoryScope: options.inputHistoryScope
-    }));
-    output.addClass(CELL_OUTPUT_AREA_CLASS);
-    output.toggleScrolling.connect(() => {
-      this.outputsScrolled = !this.outputsScrolled;
-    });
-
-    // Defer setting placeholder as OutputArea must be instantiated before initializing the DOM
-    this.placeholder = options.placeholder ?? true;
-
-    model.outputs.changed.connect(this.onOutputChanged, this);
-    model.outputs.stateChanged.connect(this.onOutputChanged, this);
-    model.stateChanged.connect(this.onStateChanged, this);
+  constructor(options: Notebook.IOptions) {
+    super(options);
+    this.node.tabIndex = 0; // Allow the widget to take focus.
+    // Allow the node to scroll while dragging items.
+    this.node.setAttribute('data-lm-dragscroll', 'true');
+    this.activeCellChanged.connect(this._updateSelectedCells, this);
+    this.selectionChanged.connect(this._updateSelectedCells, this);
   }
 
   /**
-   * Maximum number of outputs to display.
+   * List of selected and active cells
    */
-  protected maxNumberOutputs: number | undefined;
+  get selectedCells(): Cell[] {
+    return this._selectedCells;
+  }
 
   /**
-   * Create children widgets.
+   * Handle a change cells event.
    */
-  protected initializeDOM(): void {
-    if (!this.placeholder) {
-      return;
-    }
-
-    super.initializeDOM();
-
-    this.setPrompt(this.prompt);
-
-    // Insert the output before the cell footer.
-    const outputWrapper = (this._outputWrapper = new Panel());
-    outputWrapper.addClass(CELL_OUTPUT_WRAPPER_CLASS);
-    const outputCollapser = new OutputCollapser();
-    outputCollapser.addClass(CELL_OUTPUT_COLLAPSER_CLASS);
-    outputWrapper.addWidget(outputCollapser);
-    // Set a CSS if there are no outputs, and connect a signal for future
-    // changes to the number of outputs. This is for conditional styling
-    // if there are no outputs.
-    if (this.model.outputs.length === 0) {
-      this.addClass(NO_OUTPUTS_CLASS);
-    }
-    this._output.outputLengthChanged.connect(this._outputLengthHandler, this);
-    outputWrapper.addWidget(this._output);
-    const layout = this.layout as PanelLayout;
-    layout.insertWidget(layout.widgets.length - 1, new ResizeHandle(this.node));
-    layout.insertWidget(layout.widgets.length - 1, outputWrapper);
-
-    if (this.model.isDirty) {
-      this.addClass(DIRTY_CLASS);
-    }
-
-    this._outputPlaceholder = new OutputPlaceholder(() => {
-      this.outputHidden = !this.outputHidden;
-    });
-
-    const layoutWrapper = outputWrapper.layout as PanelLayout;
-    if (this.outputHidden) {
-      layoutWrapper.removeWidget(this._output);
-      layoutWrapper.addWidget(this._outputPlaceholder);
-      if (this.inputHidden && !outputWrapper.isHidden) {
-        this._outputWrapper!.hide();
+  protected _onCellsChanged(
+    sender: CellList,
+    args: IObservableList.IChangedArgs<ICellModel>
+  ): void {
+    const activeCellId = this.activeCell?.model.id;
+    super._onCellsChanged(sender, args);
+    if (activeCellId) {
+      const newActiveCellIndex = this.model?.sharedModel.cells.findIndex(
+        cell => cell.getId() === activeCellId
+      );
+      if (newActiveCellIndex != null) {
+        this.activeCellIndex = newActiveCellIndex;
       }
     }
-
-    const trans = this.translator.load('jupyterlab');
-    const ariaLabel =
-      this.model.outputs.length === 0
-        ? trans.__('Code Cell Content')
-        : trans.__('Code Cell Content with Output');
-    this.node.setAttribute('aria-label', ariaLabel);
   }
 
   /**
-   * Initialize view state from model.
+   * A signal emitted when the active cell changes.
    *
    * #### Notes
-   * Should be called after construction. For convenience, returns this, so it
-   * can be chained in the construction, like `new Foo().initializeState();`
+   * This can be due to the active index changing or the
+   * cell at the active index changing.
    */
-  initializeState(): this {
-    super.initializeState();
-    this.loadScrolledState();
-
-    this.setPrompt(`${this.model.executionCount || ''}`);
-    return this;
+  get activeCellChanged(): ISignal<this, Cell | null> {
+    return this._activeCellChanged;
   }
 
-  get headings(): Cell.IHeading[] {
-    if (!this._headingsCache) {
-      const headings: Cell.IHeading[] = [];
+  /**
+   * A signal emitted when the state of the notebook changes.
+   */
+  get stateChanged(): ISignal<this, IChangedArgs<any>> {
+    return this._stateChanged;
+  }
 
-      // Iterate over the code cell outputs to check for Markdown or HTML from which we can generate ToC headings...
-      const outputs = this.model.outputs;
-      for (let j = 0; j < outputs.length; j++) {
-        const m = outputs.get(j);
+  /**
+   * A signal emitted when the selection state of the notebook changes.
+   */
+  get selectionChanged(): ISignal<this, void> {
+    return this._selectionChanged;
+  }
 
-        let htmlType: string | null = null;
-        let mdType: string | null = null;
-
-        Object.keys(m.data).forEach(t => {
-          if (!mdType && TableOfContentsUtils.Markdown.isMarkdown(t)) {
-            mdType = t;
-          } else if (!htmlType && TableOfContentsUtils.isHTML(t)) {
-            htmlType = t;
-          }
-        });
-
-        // Parse HTML output
-        if (htmlType) {
-          headings.push(
-            ...TableOfContentsUtils.getHTMLHeadings(
-              this._rendermime.sanitizer.sanitize(m.data[htmlType] as string)
-            ).map(heading => {
-              return {
-                ...heading,
-                outputIndex: j,
-                type: Cell.HeadingType.HTML
-              };
-            })
-          );
-        } else if (mdType) {
-          headings.push(
-            ...TableOfContentsUtils.Markdown.getHeadings(
-              m.data[mdType] as string
-            ).map(heading => {
-              return {
-                ...heading,
-                outputIndex: j,
-                type: Cell.HeadingType.Markdown
-              };
-            })
-          );
-        }
-      }
-
-      this._headingsCache = headings;
+  /**
+   * The interactivity mode of the notebook.
+   */
+  get mode(): NotebookMode {
+    return this._mode;
+  }
+  set mode(newValue: NotebookMode) {
+    const activeCell = this.activeCell;
+    if (!activeCell) {
+      newValue = 'command';
     }
-
-    return [...this._headingsCache!];
-  }
-
-  /**
-   * Get the output area for the cell.
-   */
-  get outputArea(): OutputArea {
-    return this._output;
-  }
-
-  /**
-   * The view state of output being collapsed.
-   */
-  get outputHidden(): boolean {
-    return this._outputHidden;
-  }
-  set outputHidden(value: boolean) {
-    if (this._outputHidden === value) {
+    if (newValue === this._mode) {
+      this._ensureFocus();
       return;
     }
+    // Post an update request.
+    this.update();
+    const oldValue = this._mode;
+    this._mode = newValue;
 
-    if (!this.placeholder) {
-      const layout = this._outputWrapper!.layout as PanelLayout;
-      if (value) {
-        layout.removeWidget(this._output);
-        layout.addWidget(this._outputPlaceholder!);
-        if (this.inputHidden && !this._outputWrapper!.isHidden) {
-          this._outputWrapper!.hide();
-        }
-      } else {
-        if (this._outputWrapper!.isHidden) {
-          this._outputWrapper!.show();
-        }
-        layout.removeWidget(this._outputPlaceholder!);
-        layout.addWidget(this._output);
+    if (newValue === 'edit') {
+      // Edit mode deselects all cells.
+      for (const widget of this.widgets) {
+        this.deselect(widget);
       }
-    }
-    this._outputHidden = value;
-    if (this.syncCollapse) {
-      this.saveCollapseState();
-    }
-  }
-
-  /**
-   * Save view collapse state to model
-   */
-  saveCollapseState(): void {
-    // Because collapse state for a code cell involves two different pieces of
-    // metadata (the `collapsed` and `jupyter` metadata keys), we block reacting
-    // to changes in metadata until we have fully committed our changes.
-    // Otherwise setting one key can trigger a write to the other key to
-    // maintain the synced consistency.
-    this.model.sharedModel.transact(() => {
-      super.saveCollapseState();
-
-      const collapsed = this.model.getMetadata('collapsed');
-
-      if (
-        (this.outputHidden && collapsed === true) ||
-        (!this.outputHidden && collapsed === undefined)
-      ) {
-        return;
+      //  Edit mode unrenders an active markdown widget.
+      if (activeCell instanceof MarkdownCell) {
+        activeCell.rendered = false;
       }
-
-      // Do not set jupyter.outputs_hidden since it is redundant. See
-      // and https://github.com/jupyter/nbformat/issues/137
-      if (this.outputHidden) {
-        this.model.setMetadata('collapsed', true);
-      } else {
-        this.model.deleteMetadata('collapsed');
-      }
-    }, false);
-  }
-
-  /**
-   * Revert view collapse state from model.
-   *
-   * We consider the `collapsed` metadata key as the source of truth for outputs
-   * being hidden.
-   */
-  loadCollapseState(): void {
-    super.loadCollapseState();
-    this.outputHidden = !!this.model.getMetadata('collapsed');
-  }
-
-  /**
-   * Whether the output is in a scrolled state?
-   */
-  get outputsScrolled(): boolean {
-    return this._outputsScrolled;
-  }
-  set outputsScrolled(value: boolean) {
-    this.toggleClass('jp-mod-outputsScrolled', value);
-    this._outputsScrolled = value;
-    if (this.syncScrolled) {
-      this.saveScrolledState();
-    }
-  }
-
-  /**
-   * Save view collapse state to model
-   */
-  saveScrolledState(): void {
-    const current = this.model.getMetadata('scrolled');
-
-    if (
-      (this.outputsScrolled && current === true) ||
-      (!this.outputsScrolled && current === undefined)
-    ) {
-      return;
-    }
-    if (this.outputsScrolled) {
-      this.model.setMetadata('scrolled', true);
+      activeCell!.inputHidden = false;
     } else {
-      this.model.deleteMetadata('scrolled');
+      // Focus on the notebook document, which blurs the active cell.
+      this.node.focus();
     }
+    this._stateChanged.emit({ name: 'mode', oldValue, newValue });
+    this._ensureFocus();
   }
 
   /**
-   * Revert view collapse state from model.
-   */
-  loadScrolledState(): void {
-    // We don't have the notion of 'auto' scrolled, so we make it false.
-    if (this.model.getMetadata('scrolled') === 'auto') {
-      this.outputsScrolled = false;
-    } else {
-      this.outputsScrolled = !!this.model.getMetadata('scrolled');
-    }
-  }
-
-  /**
-   * Whether to sync the scrolled state to the cell model.
-   */
-  get syncScrolled(): boolean {
-    return this._syncScrolled;
-  }
-  set syncScrolled(value: boolean) {
-    if (this._syncScrolled === value) {
-      return;
-    }
-    this._syncScrolled = value;
-    if (value) {
-      this.loadScrolledState();
-    }
-  }
-
-  /**
-   * Handle the input being hidden.
+   * The active cell index of the notebook.
    *
    * #### Notes
-   * This method is called by the case cell implementation and is
-   * subclasses here so the code cell can watch to see when input
-   * is hidden without accessing private state.
+   * The index will be clamped to the bounds of the notebook cells.
    */
-  protected handleInputHidden(value: boolean): void {
-    if (this.placeholder) {
+  get activeCellIndex(): number {
+    if (!this.model) {
+      return -1;
+    }
+    return this.widgets.length ? this._activeCellIndex : -1;
+  }
+  set activeCellIndex(newValue: number) {
+    const oldValue = this._activeCellIndex;
+    if (!this.model || !this.widgets.length) {
+      newValue = -1;
+    } else {
+      newValue = Math.max(newValue, 0);
+      newValue = Math.min(newValue, this.widgets.length - 1);
+    }
+
+    this._activeCellIndex = newValue;
+    const cell = this.widgets[newValue] ?? null;
+    const cellChanged = cell !== this._activeCell;
+    if (cellChanged) {
+      // Post an update request.
+      this.update();
+      this._activeCell = cell;
+    }
+
+    if (cellChanged || newValue != oldValue) {
+      this._activeCellChanged.emit(cell);
+    }
+
+    if (this.mode === 'edit' && cell instanceof MarkdownCell) {
+      cell.rendered = false;
+    }
+    this._ensureFocus();
+    if (newValue === oldValue) {
       return;
     }
-    if (!value && this._outputWrapper!.isHidden) {
-      this._outputWrapper!.show();
-    } else if (value && !this._outputWrapper!.isHidden && this._outputHidden) {
-      this._outputWrapper!.hide();
-    }
+    this._trimSelections();
+    this._stateChanged.emit({ name: 'activeCellIndex', oldValue, newValue });
   }
 
   /**
-   * Clone the cell, using the same model.
+   * Get the active cell widget.
+   *
+   * #### Notes
+   * This is a cell or `null` if there is no active cell.
    */
-  clone(): CodeCell {
-    const constructor = this.constructor as typeof CodeCell;
-    return new constructor({
-      model: this.model,
-      contentFactory: this.contentFactory,
-      rendermime: this._rendermime,
-      placeholder: false,
-      translator: this.translator
-    });
+  get activeCell(): Cell | null {
+    return this._activeCell;
+  }
+
+  get lastClipboardInteraction(): 'copy' | 'cut' | 'paste' | null {
+    return this._lastClipboardInteraction;
+  }
+  set lastClipboardInteraction(newValue: 'copy' | 'cut' | 'paste' | null) {
+    this._lastClipboardInteraction = newValue;
   }
 
   /**
-   * Clone the OutputArea alone, returning a simplified output area, using the same model.
-   */
-  cloneOutputArea(): OutputArea {
-    return new SimplifiedOutputArea({
-      model: this.model.outputs!,
-      contentFactory: this.contentFactory,
-      rendermime: this._rendermime
-    });
-  }
-
-  /**
-   * Dispose of the resources used by the widget.
+   * Dispose of the resources held by the widget.
    */
   dispose(): void {
     if (this.isDisposed) {
       return;
     }
-    this._output.outputLengthChanged.disconnect(
-      this._outputLengthHandler,
-      this
-    );
-    this._rendermime = null!;
-    this._output = null!;
-    this._outputWrapper = null!;
-    this._outputPlaceholder = null!;
+    this._activeCell = null;
     super.dispose();
   }
 
   /**
-   * Handle changes in the model.
+   * Move cells preserving widget view state.
+   *
+   * #### Notes
+   * This is required because at the model level a move is a deletion
+   * followed by an insertion. Hence the view state is not preserved.
+   *
+   * @param from The index of the cell to move
+   * @param to The new index of the cell
+   * @param n Number of cells to move
    */
-  protected onStateChanged(model: ICellModel, args: IChangedArgs<any>): void {
-    switch (args.name) {
-      case 'executionCount':
-        this.setPrompt(`${(model as ICodeCellModel).executionCount || ''}`);
-        break;
-      case 'isDirty':
-        if ((model as ICodeCellModel).isDirty) {
-          this.addClass(DIRTY_CLASS);
-        } else {
-          this.removeClass(DIRTY_CLASS);
+  moveCell(from: number, to: number, n = 1): void {
+    // Save active cell id to be restored
+    const newActiveCellIndex =
+      from <= this.activeCellIndex && this.activeCellIndex < from + n
+        ? this.activeCellIndex + to - from - (from > to ? 0 : n - 1)
+        : -1;
+    const isSelected = this.widgets
+      .slice(from, from + n)
+      .map(w => this.isSelected(w));
+
+    super.moveCell(from, to, n);
+
+    if (newActiveCellIndex >= 0) {
+      this.activeCellIndex = newActiveCellIndex;
+    }
+    if (from > to) {
+      isSelected.forEach((selected, idx) => {
+        if (selected) {
+          this.select(this.widgets[to + idx]);
         }
-        break;
-      default:
-        break;
+      });
+    } else {
+      isSelected.forEach((selected, idx) => {
+        if (selected) {
+          this.select(this.widgets[to - n + 1 + idx]);
+        }
+      });
     }
   }
 
   /**
-   * Callback on output changes
+   * Select a cell widget.
+   *
+   * #### Notes
+   * It is a no-op if the value does not change.
+   * It will emit the `selectionChanged` signal.
    */
-  protected onOutputChanged(): void {
-    this._headingsCache = null;
-  }
-
-  /**
-   * Handle changes in the metadata.
-   */
-  protected onMetadataChanged(model: CellModel, args: IMapChange): void {
-    switch (args.key) {
-      case 'scrolled':
-        if (this.syncScrolled) {
-          this.loadScrolledState();
-        }
-        break;
-      case 'collapsed':
-        if (this.syncCollapse) {
-          this.loadCollapseState();
-        }
-        break;
-      default:
-        break;
-    }
-    super.onMetadataChanged(model, args);
-  }
-
-  /**
-   * Handle changes in the number of outputs in the output area.
-   */
-  private _outputLengthHandler(sender: OutputArea, args: number) {
-    const force = args === 0 ? true : false;
-    this.toggleClass(NO_OUTPUTS_CLASS, force);
-    const trans = this.translator.load('jupyterlab');
-    const ariaLabel = force
-      ? trans.__('Code Cell Content')
-      : trans.__('Code Cell Content with Output');
-    this.node.setAttribute('aria-label', ariaLabel);
-  }
-
-  private _headingsCache: Cell.IHeading[] | null = null;
-  private _rendermime: IRenderMimeRegistry;
-  private _outputHidden = false;
-  private _outputsScrolled: boolean;
-  private _outputWrapper: Widget | null = null;
-  private _outputPlaceholder: OutputPlaceholder | null = null;
-  private _output: OutputArea;
-  private _syncScrolled = false;
-}
-
-/**
- * The namespace for the `CodeCell` class statics.
- */
-export namespace CodeCell {
-  /**
-   * An options object for initializing a base cell widget.
-   */
-  export interface IOptions extends Cell.IOptions<ICodeCellModel> {
-    /**
-     * Code cell layout.
-     */
-    layout?: CodeCellLayout;
-    /**
-     * The mime renderer for the cell widget.
-     */
-    rendermime: IRenderMimeRegistry;
-  }
-
-  /**
-   * Execute a cell given a client session.
-   */
-  export async function execute(
-    cell: CodeCell,
-    sessionContext: ISessionContext,
-    metadata?: JSONObject
-  ): Promise<KernelMessage.IExecuteReplyMsg | void> {
-    const model = cell.model;
-    const code = model.sharedModel.getSource();
-    if (!code.trim() || !sessionContext.session?.kernel) {
-      model.sharedModel.transact(() => {
-        model.clearExecution();
-      }, false);
+  select(widget: Cell): void {
+    if (Private.selectedProperty.get(widget)) {
       return;
     }
-    const cellId = { cellId: model.sharedModel.getId() };
-    metadata = {
-      ...model.metadata,
-      ...metadata,
-      ...cellId
-    };
-    const { recordTiming } = metadata;
-    model.sharedModel.transact(() => {
-      model.clearExecution();
-      cell.outputHidden = false;
-    }, false);
-    cell.setPrompt('*');
-    model.trusted = true;
-    let future:
-      | Kernel.IFuture<
-          KernelMessage.IExecuteRequestMsg,
-          KernelMessage.IExecuteReplyMsg
-        >
-      | undefined;
-    try {
-      const msgPromise = OutputArea.execute(
-        code,
-        cell.outputArea,
-        sessionContext,
-        metadata
-      );
-      // cell.outputArea.future assigned synchronously in `execute`
-      if (recordTiming) {
-        const recordTimingHook = (msg: KernelMessage.IIOPubMessage) => {
-          let label: string;
-          switch (msg.header.msg_type) {
-            case 'status':
-              label = `status.${
-                (msg as KernelMessage.IStatusMsg).content.execution_state
-              }`;
-              break;
-            case 'execute_input':
-              label = 'execute_input';
-              break;
-            default:
-              return true;
-          }
-          // If the data is missing, estimate it to now
-          // Date was added in 5.1: https://jupyter-client.readthedocs.io/en/stable/messaging.html#message-header
-          const value = msg.header.date || new Date().toISOString();
-          const timingInfo: any = Object.assign(
-            {},
-            model.getMetadata('execution')
+    Private.selectedProperty.set(widget, true);
+    this._selectionChanged.emit(void 0);
+    this.update();
+  }
+
+  /**
+   * Deselect a cell widget.
+   *
+   * #### Notes
+   * It is a no-op if the value does not change.
+   * It will emit the `selectionChanged` signal.
+   */
+  deselect(widget: Cell): void {
+    if (!Private.selectedProperty.get(widget)) {
+      return;
+    }
+    Private.selectedProperty.set(widget, false);
+    this._selectionChanged.emit(void 0);
+    this.update();
+  }
+
+  /**
+   * Whether a cell is selected.
+   */
+  isSelected(widget: Cell): boolean {
+    return Private.selectedProperty.get(widget);
+  }
+
+  /**
+   * Whether a cell is selected or is the active cell.
+   */
+  isSelectedOrActive(widget: Cell): boolean {
+    if (widget === this._activeCell) {
+      return true;
+    }
+    return Private.selectedProperty.get(widget);
+  }
+
+  /**
+   * Deselect all of the cells.
+   */
+  deselectAll(): void {
+    let changed = false;
+    for (const widget of this.widgets) {
+      if (Private.selectedProperty.get(widget)) {
+        changed = true;
+      }
+      Private.selectedProperty.set(widget, false);
+    }
+    if (changed) {
+      this._selectionChanged.emit(void 0);
+    }
+    // Make sure we have a valid active cell.
+    this.activeCellIndex = this.activeCellIndex; // eslint-disable-line
+    this.update();
+  }
+
+  /**
+   * Move the head of an existing contiguous selection to extend the selection.
+   *
+   * @param index - The new head of the existing selection.
+   *
+   * #### Notes
+   * If there is no existing selection, the active cell is considered an
+   * existing one-cell selection.
+   *
+   * If the new selection is a single cell, that cell becomes the active cell
+   * and all cells are deselected.
+   *
+   * There is no change if there are no cells (i.e., activeCellIndex is -1).
+   */
+  extendContiguousSelectionTo(index: number): void {
+    let { head, anchor } = this.getContiguousSelection();
+    let i: number;
+
+    // Handle the case of no current selection.
+    if (anchor === null || head === null) {
+      if (index === this.activeCellIndex) {
+        // Already collapsed selection, nothing more to do.
+        return;
+      }
+
+      // We will start a new selection below.
+      head = this.activeCellIndex;
+      anchor = this.activeCellIndex;
+    }
+
+    // Move the active cell. We do this before the collapsing shortcut below.
+    this.activeCellIndex = index;
+
+    // Make sure the index is valid, according to the rules for setting and clipping the
+    // active cell index. This may change the index.
+    index = this.activeCellIndex;
+
+    // Collapse the selection if it is only the active cell.
+    if (index === anchor) {
+      this.deselectAll();
+      return;
+    }
+
+    let selectionChanged = false;
+
+    if (head < index) {
+      if (head < anchor) {
+        Private.selectedProperty.set(this.widgets[head], false);
+        selectionChanged = true;
+      }
+
+      // Toggle everything strictly between head and index except anchor.
+      for (i = head + 1; i < index; i++) {
+        if (i !== anchor) {
+          Private.selectedProperty.set(
+            this.widgets[i],
+            !Private.selectedProperty.get(this.widgets[i])
           );
-          timingInfo[`iopub.${label}`] = value;
-          model.setMetadata('execution', timingInfo);
-          return true;
-        };
-        cell.outputArea.future.registerMessageHook(recordTimingHook);
-      } else {
-        model.deleteMetadata('execution');
-      }
-      // Save this execution's future so we can compare in the catch below.
-      future = cell.outputArea.future;
-      const msg = (await msgPromise)!;
-      model.executionCount = msg.content.execution_count;
-      if (recordTiming) {
-        const timingInfo = Object.assign(
-          {},
-          model.getMetadata('execution') as any
-        );
-        const started = msg.metadata.started as string;
-        // Started is not in the API, but metadata IPyKernel sends
-        if (started) {
-          timingInfo['shell.execute_reply.started'] = started;
+          selectionChanged = true;
         }
-        // Per above, the 5.0 spec does not assume date, so we estimate is required
-        const finished = msg.header.date as string;
-        timingInfo['shell.execute_reply'] =
-          finished || new Date().toISOString();
-        model.setMetadata('execution', timingInfo);
       }
-      return msg;
-    } catch (e) {
-      // If we started executing, and the cell is still indicating this
-      // execution, clear the prompt.
-      if (future && !cell.isDisposed && cell.outputArea.future === future) {
-        cell.setPrompt('');
+    } else if (index < head) {
+      if (anchor < head) {
+        Private.selectedProperty.set(this.widgets[head], false);
+        selectionChanged = true;
       }
-      throw e;
+
+      // Toggle everything strictly between index and head except anchor.
+      for (i = index + 1; i < head; i++) {
+        if (i !== anchor) {
+          Private.selectedProperty.set(
+            this.widgets[i],
+            !Private.selectedProperty.get(this.widgets[i])
+          );
+          selectionChanged = true;
+        }
+      }
+    }
+
+    // Anchor and index should *always* be selected.
+    if (!Private.selectedProperty.get(this.widgets[anchor])) {
+      selectionChanged = true;
+    }
+    Private.selectedProperty.set(this.widgets[anchor], true);
+
+    if (!Private.selectedProperty.get(this.widgets[index])) {
+      selectionChanged = true;
+    }
+    Private.selectedProperty.set(this.widgets[index], true);
+
+    if (selectionChanged) {
+      this._selectionChanged.emit(void 0);
     }
   }
-}
 
-/**
- * `AttachmentsCell` - A base class for a cell widget that allows
- *  attachments to be drag/drop'd or pasted onto it
- */
-export abstract class AttachmentsCell<
-  T extends IAttachmentsCellModel
-> extends Cell<T> {
+  /**
+   * Get the head and anchor of a contiguous cell selection.
+   *
+   * The head of a contiguous selection is always the active cell.
+   *
+   * If there are no cells selected, `{head: null, anchor: null}` is returned.
+   *
+   * Throws an error if the currently selected cells do not form a contiguous
+   * selection.
+   */
+  getContiguousSelection():
+    | { head: number; anchor: number }
+    | { head: null; anchor: null } {
+    const cells = this.widgets;
+    const first = ArrayExt.findFirstIndex(cells, c => this.isSelected(c));
+
+    // Return early if no cells are selected.
+    if (first === -1) {
+      return { head: null, anchor: null };
+    }
+
+    const last = ArrayExt.findLastIndex(
+      cells,
+      c => this.isSelected(c),
+      -1,
+      first
+    );
+
+    // Check that the selection is contiguous.
+    for (let i = first; i <= last; i++) {
+      if (!this.isSelected(cells[i])) {
+        throw new Error('Selection not contiguous');
+      }
+    }
+
+    // Check that the active cell is one of the endpoints of the selection.
+    const activeIndex = this.activeCellIndex;
+    if (first !== activeIndex && last !== activeIndex) {
+      throw new Error('Active cell not at endpoint of selection');
+    }
+
+    // Determine the head and anchor of the selection.
+    if (first === activeIndex) {
+      return { head: first, anchor: last };
+    } else {
+      return { head: last, anchor: first };
+    }
+  }
+
+  /**
+   * Scroll so that the given cell is in view. Selects and activates cell.
+   *
+   * @param cell - A cell in the notebook widget.
+   * @param align - Type of alignment.
+   *
+   */
+  async scrollToCell(
+    cell: Cell,
+    align: WindowedList.ScrollToAlign = 'auto'
+  ): Promise<void> {
+    try {
+      await this.scrollToItem(
+        this.widgets.findIndex(c => c === cell),
+        align
+      );
+    } catch (r) {
+      //no-op
+    }
+    // change selection and active cell:
+    this.deselectAll();
+    this.select(cell);
+    cell.activate();
+  }
+
+  private _parseFragment(fragment: string): Private.IFragmentData | undefined {
+    const cleanedFragment = fragment.slice(1);
+
+    if (!cleanedFragment) {
+      // Bail early
+      return;
+    }
+
+    const parts = cleanedFragment.split('=');
+    if (parts.length === 1) {
+      // Default to heading if no prefix is given.
+      return {
+        kind: 'heading',
+        value: cleanedFragment
+      };
+    }
+    return {
+      kind: parts[0] as any,
+      value: parts.slice(1).join('=')
+    };
+  }
+
+  /**
+   * Set URI fragment identifier.
+   */
+  async setFragment(fragment: string): Promise<void> {
+    const parsedFragment = this._parseFragment(fragment);
+
+    if (!parsedFragment) {
+      // Bail early
+      return;
+    }
+
+    let result;
+
+    switch (parsedFragment.kind) {
+      case 'heading':
+        result = await this._findHeading(parsedFragment.value);
+        break;
+      case 'cell-id':
+        result = this._findCellById(parsedFragment.value);
+        break;
+      default:
+        console.warn(
+          `Unknown target type for URI fragment ${fragment}, interpreting as a heading`
+        );
+        result = await this._findHeading(
+          parsedFragment.kind + '=' + parsedFragment.value
+        );
+        break;
+    }
+
+    if (result == null) {
+      return;
+    }
+    let { cell, element } = result;
+
+    if (!cell.inViewport) {
+      await this.scrollToCell(cell, 'center');
+    }
+
+    if (element == null) {
+      element = cell.node;
+    }
+    const widgetBox = this.node.getBoundingClientRect();
+    const elementBox = element.getBoundingClientRect();
+
+    if (
+      elementBox.top > widgetBox.bottom ||
+      elementBox.bottom < widgetBox.top
+    ) {
+      element.scrollIntoView({ block: 'center' });
+    }
+  }
+
   /**
    * Handle the DOM events for the widget.
    *
@@ -1572,7 +1731,54 @@ export abstract class AttachmentsCell<
    * not be called directly by user code.
    */
   handleEvent(event: Event): void {
+    if (!this.model) {
+      return;
+    }
+
     switch (event.type) {
+      case 'contextmenu':
+        if (event.eventPhase === Event.CAPTURING_PHASE) {
+          this._evtContextMenuCapture(event as PointerEvent);
+        }
+        break;
+      case 'mousedown':
+        if (event.eventPhase === Event.CAPTURING_PHASE) {
+          this._evtMouseDownCapture(event as MouseEvent);
+        } else {
+          // Skip processing the event when it resulted from a toolbar button click
+          if (!event.defaultPrevented) {
+            this._evtMouseDown(event as MouseEvent);
+          }
+        }
+        break;
+      case 'mouseup':
+        if (event.currentTarget === document) {
+          this._evtDocumentMouseup(event as MouseEvent);
+        }
+        break;
+      case 'mousemove':
+        if (event.currentTarget === document) {
+          this._evtDocumentMousemove(event as MouseEvent);
+        }
+        break;
+      case 'keydown':
+        this._ensureFocus(true);
+        break;
+      case 'dblclick':
+        this._evtDblClick(event as MouseEvent);
+        break;
+      case 'focusin':
+        this._evtFocusIn(event as MouseEvent);
+        break;
+      case 'focusout':
+        this._evtFocusOut(event as MouseEvent);
+        break;
+      case 'lm-dragenter':
+        this._evtDragEnter(event as Drag.Event);
+        break;
+      case 'lm-dragleave':
+        this._evtDragLeave(event as Drag.Event);
+        break;
       case 'lm-dragover':
         this._evtDragOver(event as Drag.Event);
         break;
@@ -1580,134 +1786,636 @@ export abstract class AttachmentsCell<
         this._evtDrop(event as Drag.Event);
         break;
       default:
+        super.handleEvent(event);
         break;
     }
   }
-
-  /**
-   * Get the editor options at initialization.
-   *
-   * @returns Editor options
-   */
-  protected getEditorOptions(): InputArea.IOptions['editorOptions'] {
-    const base = super.getEditorOptions() ?? {};
-    base.extensions = [
-      ...(base.extensions ?? []),
-      EditorView.domEventHandlers({
-        dragenter: (event: DragEvent) => {
-          event.preventDefault();
-        },
-        dragover: (event: DragEvent) => {
-          event.preventDefault();
-        },
-        drop: (event: DragEvent) => {
-          this._evtNativeDrop(event);
-        },
-        paste: (event: ClipboardEvent) => {
-          this._evtPaste(event);
-        }
-      })
-    ];
-    return base;
-  }
-
-  /**
-   * Modify the cell source to include a reference to the attachment.
-   */
-  protected abstract updateCellSourceWithAttachment(
-    attachmentName: string,
-    URI?: string
-  ): void;
 
   /**
    * Handle `after-attach` messages for the widget.
    */
   protected onAfterAttach(msg: Message): void {
     super.onAfterAttach(msg);
-
     const node = this.node;
-    node.addEventListener('lm-dragover', this);
-    node.addEventListener('lm-drop', this);
+    node.addEventListener('contextmenu', this, true);
+    node.addEventListener('mousedown', this, true);
+    node.addEventListener('mousedown', this);
+    node.addEventListener('keydown', this);
+    node.addEventListener('dblclick', this);
+
+    node.addEventListener('focusin', this);
+    node.addEventListener('focusout', this);
+    // Capture drag events for the notebook widget
+    // in order to preempt the drag/drop handlers in the
+    // code editor widgets, which can take text data.
+    node.addEventListener('lm-dragenter', this, true);
+    node.addEventListener('lm-dragleave', this, true);
+    node.addEventListener('lm-dragover', this, true);
+    node.addEventListener('lm-drop', this, true);
   }
 
   /**
-   * A message handler invoked on a `'before-detach'`
-   * message
+   * Handle `before-detach` messages for the widget.
    */
   protected onBeforeDetach(msg: Message): void {
     const node = this.node;
-    node.removeEventListener('lm-dragover', this);
-    node.removeEventListener('lm-drop', this);
-
-    super.onBeforeDetach(msg);
+    node.removeEventListener('contextmenu', this, true);
+    node.removeEventListener('mousedown', this, true);
+    node.removeEventListener('mousedown', this);
+    node.removeEventListener('keydown', this);
+    node.removeEventListener('dblclick', this);
+    node.removeEventListener('focusin', this);
+    node.removeEventListener('focusout', this);
+    node.removeEventListener('lm-dragenter', this, true);
+    node.removeEventListener('lm-dragleave', this, true);
+    node.removeEventListener('lm-dragover', this, true);
+    node.removeEventListener('lm-drop', this, true);
+    document.removeEventListener('mousemove', this, true);
+    document.removeEventListener('mouseup', this, true);
+    super.onBeforeAttach(msg);
   }
 
-  private _evtDragOver(event: Drag.Event) {
-    const supportedMimeType = some(imageRendererFactory.mimeTypes, mimeType => {
-      if (!event.mimeData.hasData(CONTENTS_MIME_RICH)) {
-        return false;
+  /**
+   * A message handler invoked on an `'after-show'` message.
+   */
+  protected onAfterShow(msg: Message): void {
+    super.onAfterShow(msg);
+    this._checkCacheOnNextResize = true;
+  }
+
+  /**
+   * A message handler invoked on a `'resize'` message.
+   */
+  protected onResize(msg: Widget.ResizeMessage): void {
+    // TODO
+    if (!this._checkCacheOnNextResize) {
+      return super.onResize(msg);
+    }
+    super.onResize(msg);
+    this._checkCacheOnNextResize = false;
+    const cache = this._cellLayoutStateCache;
+    const width = parseInt(this.node.style.width, 10);
+    if (cache) {
+      if (width === cache.width) {
+        // Cache identical, do nothing
+        return;
       }
-      const data = event.mimeData.getData(
-        CONTENTS_MIME_RICH
-      ) as DirListing.IContentsThunk;
-      return data.model.mimetype === mimeType;
+    }
+    // Update cache
+    this._cellLayoutStateCache = { width };
+
+    // Fallback:
+    for (const w of this.widgets) {
+      if (w instanceof Cell && w.inViewport) {
+        w.editorWidget?.update();
+      }
+    }
+  }
+
+  /**
+   * A message handler invoked on an `'before-hide'` message.
+   */
+  protected onBeforeHide(msg: Message): void {
+    super.onBeforeHide(msg);
+    // Update cache
+    const width = parseInt(this.node.style.width, 10);
+    this._cellLayoutStateCache = { width };
+  }
+
+  /**
+   * Handle `'activate-request'` messages.
+   */
+  protected onActivateRequest(msg: Message): void {
+    super.onActivateRequest(msg);
+    this._ensureFocus(true);
+  }
+
+  /**
+   * Handle `update-request` messages sent to the widget.
+   */
+  protected onUpdateRequest(msg: Message): void {
+    super.onUpdateRequest(msg);
+    const activeCell = this.activeCell;
+
+    // Set the appropriate classes on the cells.
+    if (this.mode === 'edit') {
+      this.addClass(EDIT_CLASS);
+      this.removeClass(COMMAND_CLASS);
+    } else {
+      this.addClass(COMMAND_CLASS);
+      this.removeClass(EDIT_CLASS);
+    }
+    if (activeCell) {
+      activeCell.addClass(ACTIVE_CLASS);
+    }
+
+    let count = 0;
+    for (const widget of this.widgets) {
+      if (widget !== activeCell) {
+        widget.removeClass(ACTIVE_CLASS);
+      }
+      widget.removeClass(OTHER_SELECTED_CLASS);
+      if (this.isSelectedOrActive(widget)) {
+        widget.addClass(SELECTED_CLASS);
+        count++;
+      } else {
+        widget.removeClass(SELECTED_CLASS);
+      }
+    }
+    if (count > 1) {
+      activeCell?.addClass(OTHER_SELECTED_CLASS);
+    }
+  }
+
+  /**
+   * Handle a cell being inserted.
+   */
+  protected onCellInserted(index: number, cell: Cell): void {
+    void cell.ready.then(() => {
+      if (!cell.isDisposed) {
+        cell.editor!.edgeRequested.connect(this._onEdgeRequest, this);
+      }
     });
-    if (!supportedMimeType) {
+    // If the insertion happened above, increment the active cell
+    // index, otherwise it stays the same.
+    this.activeCellIndex =
+      index <= this.activeCellIndex
+        ? this.activeCellIndex + 1
+        : this.activeCellIndex;
+  }
+
+  /**
+   * Handle a cell being removed.
+   */
+  protected onCellRemoved(index: number, cell: Cell): void {
+    // If the removal happened above, decrement the active
+    // cell index, otherwise it stays the same.
+    this.activeCellIndex =
+      index <= this.activeCellIndex
+        ? this.activeCellIndex - 1
+        : this.activeCellIndex;
+    if (this.isSelected(cell)) {
+      this._selectionChanged.emit(void 0);
+    }
+  }
+
+  /**
+   * Handle a new model.
+   */
+  protected onModelChanged(
+    oldValue: INotebookModel,
+    newValue: INotebookModel
+  ): void {
+    super.onModelChanged(oldValue, newValue);
+
+    // Try to set the active cell index to 0.
+    // It will be set to `-1` if there is no new model or the model is empty.
+    this.activeCellIndex = 0;
+  }
+
+  /**
+   * Handle edge request signals from cells.
+   */
+  private _onEdgeRequest(
+    editor: CodeEditor.IEditor,
+    location: CodeEditor.EdgeLocation
+  ): void {
+    const prev = this.activeCellIndex;
+    if (location === 'top') {
+      this.activeCellIndex--;
+      // Move the cursor to the first position on the last line.
+      if (this.activeCellIndex < prev) {
+        const editor = this.activeCell!.editor;
+        if (editor) {
+          const lastLine = editor.lineCount - 1;
+          editor.setCursorPosition({ line: lastLine, column: 0 });
+        }
+      }
+    } else if (location === 'bottom') {
+      this.activeCellIndex++;
+      // Move the cursor to the first character.
+      if (this.activeCellIndex > prev) {
+        const editor = this.activeCell!.editor;
+        if (editor) {
+          editor.setCursorPosition({ line: 0, column: 0 });
+        }
+      }
+    }
+    this.mode = 'edit';
+  }
+
+  /**
+   * Ensure that the notebook has proper focus.
+   */
+  private _ensureFocus(force = false): void {
+    const activeCell = this.activeCell;
+    if (this.mode === 'edit' && activeCell) {
+      if (activeCell.editor?.hasFocus() === false) {
+        if (activeCell.inViewport) {
+          activeCell.editor?.focus();
+        } else {
+          this.scrollToItem(this.activeCellIndex)
+            .then(() => {
+              void activeCell.ready.then(() => {
+                activeCell.editor?.focus();
+              });
+            })
+            .catch(reason => {
+              // no-op
+            });
+        }
+      }
+    }
+    if (force && !this.node.contains(document.activeElement)) {
+      this.node.focus();
+    }
+  }
+
+  /**
+   * Find the cell index containing the target html element.
+   *
+   * #### Notes
+   * Returns -1 if the cell is not found.
+   */
+  private _findCell(node: HTMLElement): number {
+    // Trace up the DOM hierarchy to find the root cell node.
+    // Then find the corresponding child and select it.
+    let n: HTMLElement | null = node;
+    while (n && n !== this.node) {
+      if (n.classList.contains(NB_CELL_CLASS)) {
+        const i = ArrayExt.findFirstIndex(
+          this.widgets,
+          widget => widget.node === n
+        );
+        if (i !== -1) {
+          return i;
+        }
+        break;
+      }
+      n = n.parentElement;
+    }
+    return -1;
+  }
+
+  /**
+   * Find the target of html mouse event and cell index containing this target.
+   *
+   * #### Notes
+   * Returned index is -1 if the cell is not found.
+   */
+  private _findEventTargetAndCell(event: MouseEvent): [HTMLElement, number] {
+    let target = event.target as HTMLElement;
+    let index = this._findCell(target);
+    if (index === -1) {
+      // `event.target` sometimes gives an orphaned node in Firefox 57, which
+      // can have `null` anywhere in its parent line. If we fail to find a cell
+      // using `event.target`, try again using a target reconstructed from the
+      // position of the click event.
+      target = document.elementFromPoint(
+        event.clientX,
+        event.clientY
+      ) as HTMLElement;
+      index = this._findCell(target);
+    }
+    return [target, index];
+  }
+
+  /**
+   * Find heading with given ID in any of the cells.
+   */
+  async _findHeading(queryId: string): Promise<Private.IScrollTarget | null> {
+    // Loop on cells, get headings and search for first matching id.
+    for (let cellIdx = 0; cellIdx < this.widgets.length; cellIdx++) {
+      const cell = this.widgets[cellIdx];
+      if (
+        cell.model.type === 'raw' ||
+        (cell.model.type === 'markdown' && !(cell as MarkdownCell).rendered)
+      ) {
+        // Bail early
+        continue;
+      }
+      for (const heading of cell.headings) {
+        let id: string | undefined | null = '';
+        switch (heading.type) {
+          case Cell.HeadingType.HTML:
+            id = (heading as TableOfContentsUtils.IHTMLHeading).id;
+            break;
+          case Cell.HeadingType.Markdown:
+            {
+              const mdHeading =
+                heading as any as TableOfContentsUtils.Markdown.IMarkdownHeading;
+              id = await TableOfContentsUtils.Markdown.getHeadingId(
+                this.rendermime.markdownParser!,
+                mdHeading.raw,
+                mdHeading.level
+              );
+            }
+            break;
+        }
+        if (id === queryId) {
+          const element = this.node.querySelector(
+            `h${heading.level}[id="${id}"]`
+          ) as HTMLElement;
+
+          return {
+            cell,
+            element
+          };
+        }
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Find cell by its unique ID.
+   */
+  _findCellById(queryId: string): Private.IScrollTarget | null {
+    for (let cellIdx = 0; cellIdx < this.widgets.length; cellIdx++) {
+      const cell = this.widgets[cellIdx];
+      if (cell.model.id === queryId) {
+        return {
+          cell
+        };
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Handle `contextmenu` event.
+   */
+  private _evtContextMenuCapture(event: PointerEvent): void {
+    // Allow the event to propagate un-modified if the user
+    // is holding the shift-key (and probably requesting
+    // the native context menu).
+    if (event.shiftKey) {
+      return;
+    }
+
+    const [target, index] = this._findEventTargetAndCell(event);
+    const widget = this.widgets[index];
+
+    if (widget && widget.editorWidget?.node.contains(target)) {
+      // Prevent CodeMirror from focusing the editor.
+      // TODO: find an editor-agnostic solution.
+      event.preventDefault();
+    }
+  }
+
+  /**
+   * Handle `mousedown` event in the capture phase for the widget.
+   */
+  private _evtMouseDownCapture(event: MouseEvent): void {
+    const { button, shiftKey } = event;
+
+    const [target, index] = this._findEventTargetAndCell(event);
+    const widget = this.widgets[index];
+
+    // On OS X, the context menu may be triggered with ctrl-left-click. In
+    // Firefox, ctrl-left-click gives an event with button 2, but in Chrome,
+    // ctrl-left-click gives an event with button 0 with the ctrl modifier.
+    if (
+      button === 2 &&
+      !shiftKey &&
+      widget &&
+      widget.editorWidget?.node.contains(target)
+    ) {
+      this.mode = 'command';
+
+      // Prevent CodeMirror from focusing the editor.
+      // TODO: find an editor-agnostic solution.
+      event.preventDefault();
+    }
+  }
+
+  /**
+   * Handle `mousedown` events for the widget.
+   */
+  private _evtMouseDown(event: MouseEvent): void {
+    const { button, shiftKey } = event;
+
+    // We only handle main or secondary button actions.
+    if (!(button === 0 || button === 2)) {
+      return;
+    }
+
+    // Shift right-click gives the browser default behavior.
+    if (shiftKey && button === 2) {
+      return;
+    }
+
+    const [target, index] = this._findEventTargetAndCell(event);
+    const widget = this.widgets[index];
+
+    let targetArea: 'input' | 'prompt' | 'cell' | 'notebook';
+    if (widget) {
+      if (widget.editorWidget?.node.contains(target)) {
+        targetArea = 'input';
+      } else if (widget.promptNode?.contains(target)) {
+        targetArea = 'prompt';
+      } else {
+        targetArea = 'cell';
+      }
+    } else {
+      targetArea = 'notebook';
+    }
+
+    // Make sure we go to command mode if the click isn't in the cell editor If
+    // we do click in the cell editor, the editor handles the focus event to
+    // switch to edit mode.
+    if (targetArea !== 'input') {
+      this.mode = 'command';
+    }
+
+    if (targetArea === 'notebook') {
+      this.deselectAll();
+    } else if (targetArea === 'prompt' || targetArea === 'cell') {
+      // We don't want to prevent the default selection behavior
+      // if there is currently text selected in an output.
+      const hasSelection = (window.getSelection() ?? '').toString() !== '';
+      if (
+        button === 0 &&
+        shiftKey &&
+        !hasSelection &&
+        !['INPUT', 'OPTION'].includes(target.tagName)
+      ) {
+        // Prevent browser selecting text in prompt or output
+        event.preventDefault();
+
+        // Shift-click - extend selection
+        try {
+          this.extendContiguousSelectionTo(index);
+        } catch (e) {
+          console.error(e);
+          this.deselectAll();
+          return;
+        }
+        // Enter selecting mode
+        this._mouseMode = 'select';
+        document.addEventListener('mouseup', this, true);
+        document.addEventListener('mousemove', this, true);
+      } else if (button === 0 && !shiftKey) {
+        // Prepare to start a drag if we are on the drag region.
+        if (targetArea === 'prompt') {
+          // Prepare for a drag start
+          this._dragData = {
+            pressX: event.clientX,
+            pressY: event.clientY,
+            index: index
+          };
+
+          // Enter possible drag mode
+          this._mouseMode = 'couldDrag';
+          document.addEventListener('mouseup', this, true);
+          document.addEventListener('mousemove', this, true);
+          event.preventDefault();
+        }
+
+        if (!this.isSelectedOrActive(widget)) {
+          this.deselectAll();
+          this.activeCellIndex = index;
+        }
+      } else if (button === 2) {
+        if (!this.isSelectedOrActive(widget)) {
+          this.deselectAll();
+          this.activeCellIndex = index;
+        }
+        event.preventDefault();
+      }
+    } else if (targetArea === 'input') {
+      if (button === 2 && !this.isSelectedOrActive(widget)) {
+        this.deselectAll();
+        this.activeCellIndex = index;
+      }
+    }
+
+    // If we didn't set focus above, make sure we get focus now.
+    this._ensureFocus(true);
+  }
+
+  /**
+   * Handle the `'mouseup'` event on the document.
+   */
+  private _evtDocumentMouseup(event: MouseEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+
+    // Remove the event listeners we put on the document
+    document.removeEventListener('mousemove', this, true);
+    document.removeEventListener('mouseup', this, true);
+
+    if (this._mouseMode === 'couldDrag') {
+      // We didn't end up dragging if we are here, so treat it as a click event.
+
+      const [, index] = this._findEventTargetAndCell(event);
+
+      this.deselectAll();
+      this.activeCellIndex = index;
+      // Focus notebook if active cell changes but does not have focus.
+      if (!this.activeCell!.node.contains(document.activeElement)) {
+        this.node.focus();
+      }
+    }
+
+    this._mouseMode = null;
+  }
+
+  /**
+   * Handle the `'mousemove'` event for the widget.
+   */
+  private _evtDocumentMousemove(event: MouseEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+
+    // If in select mode, update the selection
+    switch (this._mouseMode) {
+      case 'select': {
+        const target = event.target as HTMLElement;
+        const index = this._findCell(target);
+        if (index !== -1) {
+          this.extendContiguousSelectionTo(index);
+        }
+        break;
+      }
+      case 'couldDrag': {
+        // Check for a drag initialization.
+        const data = this._dragData!;
+        const dx = Math.abs(event.clientX - data.pressX);
+        const dy = Math.abs(event.clientY - data.pressY);
+        if (dx >= DRAG_THRESHOLD || dy >= DRAG_THRESHOLD) {
+          this._mouseMode = null;
+          this._startDrag(data.index, event.clientX, event.clientY);
+        }
+        break;
+      }
+      default:
+        break;
+    }
+  }
+
+  /**
+   * Handle the `'lm-dragenter'` event for the widget.
+   */
+  private _evtDragEnter(event: Drag.Event): void {
+    if (!event.mimeData.hasData(JUPYTER_CELL_MIME)) {
+      return;
+    }
+    event.preventDefault();
+    event.stopPropagation();
+    const target = event.target as HTMLElement;
+    const index = this._findCell(target);
+    if (index === -1) {
+      return;
+    }
+
+    const widget = this.cellsArray[index];
+    widget.node.classList.add(DROP_TARGET_CLASS);
+  }
+
+  /**
+   * Handle the `'lm-dragleave'` event for the widget.
+   */
+  private _evtDragLeave(event: Drag.Event): void {
+    if (!event.mimeData.hasData(JUPYTER_CELL_MIME)) {
+      return;
+    }
+    event.preventDefault();
+    event.stopPropagation();
+    const elements = this.node.getElementsByClassName(DROP_TARGET_CLASS);
+    if (elements.length) {
+      (elements[0] as HTMLElement).classList.remove(DROP_TARGET_CLASS);
+    }
+  }
+
+  /**
+   * Handle the `'lm-dragover'` event for the widget.
+   */
+  private _evtDragOver(event: Drag.Event): void {
+    if (!event.mimeData.hasData(JUPYTER_CELL_MIME)) {
       return;
     }
     event.preventDefault();
     event.stopPropagation();
     event.dropAction = event.proposedAction;
-  }
-
-  /**
-   * Handle the `paste` event for the widget
-   */
-  private _evtPaste(event: ClipboardEvent): void {
-    if (event.clipboardData) {
-      const items = event.clipboardData.items;
-      for (let i = 0; i < items.length; i++) {
-        if (items[i].type === 'text/plain') {
-          // Skip if this text is the path to a file
-          if (i < items.length - 1 && items[i + 1].kind === 'file') {
-            continue;
-          }
-          items[i].getAsString(text => {
-            this.editor!.replaceSelection?.(text);
-          });
-        }
-        this._attachFiles(event.clipboardData.items);
-      }
+    const elements = this.node.getElementsByClassName(DROP_TARGET_CLASS);
+    if (elements.length) {
+      (elements[0] as HTMLElement).classList.remove(DROP_TARGET_CLASS);
     }
-    event.preventDefault();
-  }
-
-  /**
-   * Handle the `drop` event for the widget
-   */
-  private _evtNativeDrop(event: DragEvent): void {
-    if (event.dataTransfer) {
-      this._attachFiles(event.dataTransfer.items);
+    const target = event.target as HTMLElement;
+    const index = this._findCell(target);
+    if (index === -1) {
+      return;
     }
-    event.preventDefault();
+    const widget = this.cellsArray[index];
+    widget.node.classList.add(DROP_TARGET_CLASS);
   }
 
   /**
    * Handle the `'lm-drop'` event for the widget.
    */
   private _evtDrop(event: Drag.Event): void {
-    const supportedMimeTypes = event.mimeData.types().filter(mimeType => {
-      if (mimeType === CONTENTS_MIME_RICH) {
-        const data = event.mimeData.getData(
-          CONTENTS_MIME_RICH
-        ) as DirListing.IContentsThunk;
-        return (
-          imageRendererFactory.mimeTypes.indexOf(data.model.mimetype) !== -1
-        );
-      }
-      return imageRendererFactory.mimeTypes.indexOf(mimeType) !== -1;
-    });
-    if (supportedMimeTypes.length === 0) {
+    if (!event.mimeData.hasData(JUPYTER_CELL_MIME)) {
       return;
     }
     event.preventDefault();
@@ -1716,600 +2424,431 @@ export abstract class AttachmentsCell<
       event.dropAction = 'none';
       return;
     }
-    event.dropAction = 'copy';
 
-    for (const mimeType of supportedMimeTypes) {
-      if (mimeType === CONTENTS_MIME_RICH) {
-        const { model, withContent } = event.mimeData.getData(
-          CONTENTS_MIME_RICH
-        ) as DirListing.IContentsThunk;
-        if (model.type === 'file') {
-          const URI = this._generateURI(model.name);
-          this.updateCellSourceWithAttachment(model.name, URI);
-          void withContent().then(fullModel => {
-            this.model.attachments.set(URI, {
-              [fullModel.mimetype]: fullModel.content
-            });
+    let target = event.target as HTMLElement;
+    while (target && target.parentElement) {
+      if (target.classList.contains(DROP_TARGET_CLASS)) {
+        target.classList.remove(DROP_TARGET_CLASS);
+        break;
+      }
+      target = target.parentElement;
+    }
+
+    // Model presence should be checked before calling event handlers
+    const model = this.model!;
+
+    const source: Notebook = event.source;
+    if (source === this) {
+      // Handle the case where we are moving cells within
+      // the same notebook.
+      event.dropAction = 'move';
+      const toMove: Cell[] = event.mimeData.getData('internal:cells');
+
+      // For collapsed markdown headings with hidden "child" cells, move all
+      // child cells as well as the markdown heading.
+      const cell = toMove[toMove.length - 1];
+      if (cell instanceof MarkdownCell && cell.headingCollapsed) {
+        const nextParent = NotebookActions.findNextParentHeading(cell, source);
+        if (nextParent > 0) {
+          const index = findIndex(source.widgets, (possibleCell: Cell) => {
+            return cell.model.id === possibleCell.model.id;
           });
-        }
-      } else {
-        // Pure mimetype, no useful name to infer
-        const URI = this._generateURI();
-        this.model.attachments.set(URI, {
-          [mimeType]: event.mimeData.getData(mimeType)
-        });
-        this.updateCellSourceWithAttachment(URI, URI);
-      }
-    }
-  }
-
-  /**
-   * Attaches all DataTransferItems (obtained from
-   * clipboard or native drop events) to the cell
-   */
-  private _attachFiles(items: DataTransferItemList) {
-    for (let i = 0; i < items.length; i++) {
-      const item = items[i];
-      if (item.kind === 'file') {
-        const blob = item.getAsFile();
-        if (blob) {
-          this._attachFile(blob);
+          toMove.push(...source.widgets.slice(index + 1, nextParent));
         }
       }
-    }
-  }
 
-  /**
-   * Takes in a file object and adds it to
-   * the cell attachments
-   */
-  private _attachFile(blob: File) {
-    const reader = new FileReader();
-    reader.onload = evt => {
-      const { href, protocol } = URLExt.parse(reader.result as string);
-      if (protocol !== 'data:') {
+      // Compute the to/from indices for the move.
+      let fromIndex = ArrayExt.firstIndexOf(this.widgets, toMove[0]);
+      let toIndex = this._findCell(target);
+      // This check is needed for consistency with the view.
+      if (toIndex !== -1 && toIndex > fromIndex) {
+        toIndex -= 1;
+      } else if (toIndex === -1) {
+        // If the drop is within the notebook but not on any cell,
+        // most often this means it is past the cell areas, so
+        // set it to move the cells to the end of the notebook.
+        toIndex = this.widgets.length - 1;
+      }
+      // Don't move if we are within the block of selected cells.
+      if (toIndex >= fromIndex && toIndex < fromIndex + toMove.length) {
         return;
       }
-      const dataURIRegex = /([\w+\/\+]+)?(?:;(charset=[\w\d-]*|base64))?,(.*)/;
-      const matches = dataURIRegex.exec(href);
-      if (!matches || matches.length !== 4) {
+
+      // Move the cells one by one
+      this.moveCell(fromIndex, toIndex, toMove.length);
+    } else {
+      // Handle the case where we are copying cells between
+      // notebooks.
+      event.dropAction = 'copy';
+      // Find the target cell and insert the copied cells.
+      let index = this._findCell(target);
+      if (index === -1) {
+        index = this.widgets.length;
+      }
+      const start = index;
+      const values = event.mimeData.getData(JUPYTER_CELL_MIME);
+      // Insert the copies of the original cells.
+      model.sharedModel.insertCells(index, values);
+      // Select the inserted cells.
+      this.deselectAll();
+      this.activeCellIndex = start;
+      this.extendContiguousSelectionTo(index - 1);
+    }
+  }
+
+  /**
+   * Start a drag event.
+   */
+  private _startDrag(index: number, clientX: number, clientY: number): void {
+    const cells = this.model!.cells;
+    const selected: nbformat.ICell[] = [];
+    const toMove: Cell[] = [];
+    let i = -1;
+    for (const widget of this.widgets) {
+      const cell = cells.get(++i);
+      if (this.isSelectedOrActive(widget)) {
+        widget.addClass(DROP_SOURCE_CLASS);
+        selected.push(cell.toJSON());
+        toMove.push(widget);
+      }
+    }
+    const activeCell = this.activeCell;
+    let dragImage: HTMLElement | null = null;
+    let countString: string;
+    if (activeCell?.model.type === 'code') {
+      const executionCount = (activeCell.model as ICodeCellModel)
+        .executionCount;
+      countString = ' ';
+      if (executionCount) {
+        countString = executionCount.toString();
+      }
+    } else {
+      countString = '';
+    }
+
+    // Create the drag image.
+    dragImage = Private.createDragImage(
+      selected.length,
+      countString,
+      activeCell?.model.sharedModel.getSource().split('\n')[0].slice(0, 26) ??
+        ''
+    );
+
+    // Set up the drag event.
+    this._drag = new Drag({
+      mimeData: new MimeData(),
+      dragImage,
+      supportedActions: 'copy-move',
+      proposedAction: 'copy',
+      source: this
+    });
+    this._drag.mimeData.setData(JUPYTER_CELL_MIME, selected);
+    // Add mimeData for the fully reified cell widgets, for the
+    // case where the target is in the same notebook and we
+    // can just move the cells.
+    this._drag.mimeData.setData('internal:cells', toMove);
+    // Add mimeData for the text content of the selected cells,
+    // allowing for drag/drop into plain text fields.
+    const textContent = toMove
+      .map(cell => cell.model.sharedModel.getSource())
+      .join('\n');
+    this._drag.mimeData.setData('text/plain', textContent);
+
+    // Remove mousemove and mouseup listeners and start the drag.
+    document.removeEventListener('mousemove', this, true);
+    document.removeEventListener('mouseup', this, true);
+    this._mouseMode = null;
+    void this._drag.start(clientX, clientY).then(action => {
+      if (this.isDisposed) {
         return;
       }
-      const mimeType = matches[1];
-      const encodedData = matches[3];
-      const bundle: nbformat.IMimeBundle = { [mimeType]: encodedData };
-      const URI = this._generateURI(blob.name);
-
-      if (mimeType.startsWith('image/')) {
-        this.model.attachments.set(URI, bundle);
-        this.updateCellSourceWithAttachment(blob.name, URI);
+      this._drag = null;
+      for (const widget of toMove) {
+        widget.removeClass(DROP_SOURCE_CLASS);
       }
-    };
-    reader.onerror = evt => {
-      console.error(`Failed to attach ${blob.name}` + evt);
-    };
-    reader.readAsDataURL(blob);
-  }
-
-  /**
-   * Generates a unique URI for a file
-   * while preserving the file extension.
-   */
-  private _generateURI(name = ''): string {
-    const lastIndex = name.lastIndexOf('.');
-    return lastIndex !== -1
-      ? UUID.uuid4().concat(name.substring(lastIndex))
-      : UUID.uuid4();
-  }
-}
-
-/** ****************************************************************************
- * MarkdownCell
- ******************************************************************************/
-
-/**
- * A widget for a Markdown cell.
- *
- * #### Notes
- * Things get complicated if we want the rendered text to update
- * any time the text changes, the text editor model changes,
- * or the input area model changes.  We don't support automatically
- * updating the rendered text in all of these cases.
- */
-export class MarkdownCell extends AttachmentsCell<IMarkdownCellModel> {
-  /**
-   * Construct a Markdown cell widget.
-   */
-  constructor(options: MarkdownCell.IOptions) {
-    super({ ...options, placeholder: true });
-    this.addClass(MARKDOWN_CELL_CLASS);
-    this.model.contentChanged.connect(this.onContentChanged, this);
-    const trans = this.translator.load('jupyterlab');
-    this.node.setAttribute('aria-label', trans.__('Markdown Cell Content'));
-    // Ensure we can resolve attachments:
-    this._rendermime = options.rendermime.clone({
-      resolver: new AttachmentsResolver({
-        parent: options.rendermime.resolver ?? undefined,
-        model: this.model.attachments
-      })
     });
-
-    this._renderer = this._rendermime.createRenderer('text/markdown');
-    this._renderer.addClass(MARKDOWN_OUTPUT_CLASS);
-
-    // Check if heading cell is set to be collapsed
-    this._headingCollapsed = (this.model.getMetadata(
-      MARKDOWN_HEADING_COLLAPSED
-    ) ?? false) as boolean;
-
-    this._showEditorForReadOnlyMarkdown =
-      options.showEditorForReadOnlyMarkdown ??
-      MarkdownCell.defaultShowEditorForReadOnlyMarkdown;
-
-    // Defer setting placeholder as the renderer must be instantiated before initializing the DOM
-    this.placeholder = options.placeholder ?? true;
-
-    this._monitor = new ActivityMonitor({
-      signal: this.model.contentChanged,
-      timeout: RENDER_TIMEOUT
-    });
-
-    // Throttle the rendering rate of the widget.
-    this.ready
-      .then(() => {
-        if (this.isDisposed) {
-          // Bail early
-          return;
-        }
-        this._monitor.activityStopped.connect(() => {
-          if (this._rendered) {
-            this.update();
-          }
-        }, this);
-      })
-      .catch(reason => {
-        console.error('Failed to be ready', reason);
-      });
   }
 
   /**
-   * Text that represents the highest heading (i.e. lowest level) if cell is a heading.
-   * Returns empty string if not a heading.
+   * Handle `focus` events for the widget.
    */
-  get headingInfo(): { text: string; level: number } {
-    // Use table of content algorithm for consistency
-    const headings = this.headings;
-
-    if (headings.length > 0) {
-      // Return the highest level
-      const { text, level } = headings.reduce(
-        (prev, curr) => (prev.level <= curr.level ? prev : curr),
-        headings[0]
-      );
-      return { text, level };
+  private _evtFocusIn(event: MouseEvent): void {
+    const target = event.target as HTMLElement;
+    const index = this._findCell(target);
+    if (index !== -1) {
+      const widget = this.widgets[index];
+      // If the editor itself does not have focus, ensure command mode.
+      if (widget.editorWidget && !widget.editorWidget.node.contains(target)) {
+        this.mode = 'command';
+      }
+      this.activeCellIndex = index;
+      // If the editor has focus, ensure edit mode.
+      const node = widget.editorWidget?.node;
+      if (node?.contains(target)) {
+        this.mode = 'edit';
+      }
+      this.activeCellIndex = index;
     } else {
-      return { text: '', level: -1 };
-    }
-  }
-
-  get headings(): Cell.IHeading[] {
-    if (!this._headingsCache) {
-      // Use table of content algorithm for consistency
-      const headings = TableOfContentsUtils.Markdown.getHeadings(
-        this.model.sharedModel.getSource()
-      );
-      this._headingsCache = headings.map(h => {
-        return { ...h, type: Cell.HeadingType.Markdown };
-      });
-    }
-
-    return [...this._headingsCache!];
-  }
-
-  /**
-   * Whether the heading is collapsed or not.
-   */
-  get headingCollapsed(): boolean {
-    return this._headingCollapsed;
-  }
-  set headingCollapsed(value: boolean) {
-    if (this._headingCollapsed !== value) {
-      this._headingCollapsed = value;
-      if (value) {
-        this.model.setMetadata(MARKDOWN_HEADING_COLLAPSED, value);
-      } else if (
-        this.model.getMetadata(MARKDOWN_HEADING_COLLAPSED) !== 'undefined'
-      ) {
-        this.model.deleteMetadata(MARKDOWN_HEADING_COLLAPSED);
-      }
-      const collapseButton = this.inputArea?.promptNode.getElementsByClassName(
-        HEADING_COLLAPSER_CLASS
-      )[0];
-      if (collapseButton) {
-        if (value) {
-          collapseButton.classList.add('jp-mod-collapsed');
-        } else {
-          collapseButton.classList.remove('jp-mod-collapsed');
-        }
-      }
-      this.renderCollapseButtons(this._renderer);
-      this._headingCollapsedChanged.emit(this._headingCollapsed);
+      // No cell has focus, ensure command mode.
+      this.mode = 'command';
     }
   }
 
   /**
-   * Number of collapsed sub cells.
+   * Handle `focusout` events for the notebook.
    */
-  get numberChildNodes(): number {
-    return this._numberChildNodes;
-  }
-  set numberChildNodes(value: number) {
-    this._numberChildNodes = value;
-    this.renderCollapseButtons(this._renderer);
-  }
+  private _evtFocusOut(event: MouseEvent): void {
+    const relatedTarget = event.relatedTarget as HTMLElement;
 
-  /**
-   * Signal emitted when the cell collapsed state changes.
-   */
-  get headingCollapsedChanged(): ISignal<MarkdownCell, boolean> {
-    return this._headingCollapsedChanged;
-  }
-
-  /**
-   * Whether the cell is rendered.
-   */
-  get rendered(): boolean {
-    return this._rendered;
-  }
-  set rendered(value: boolean) {
-    // Show cell as rendered when cell is not editable
-    if (this.readOnly && this._showEditorForReadOnlyMarkdown === false) {
-      value = true;
-    }
-    if (value === this._rendered) {
-      return;
-    }
-    this._rendered = value;
-    this._handleRendered()
-      .then(() => {
-        // If the rendered state changed, raise an event.
-        this._displayChanged.emit();
-        this._renderedChanged.emit(this._rendered);
-      })
-      .catch(reason => {
-        console.error('Failed to render', reason);
-      });
-  }
-
-  /**
-   * Signal emitted when the markdown cell rendered state changes
-   */
-  get renderedChanged(): ISignal<MarkdownCell, boolean> {
-    return this._renderedChanged;
-  }
-
-  /*
-   * Whether the Markdown editor is visible in read-only mode.
-   */
-  get showEditorForReadOnly(): boolean {
-    return this._showEditorForReadOnlyMarkdown;
-  }
-  set showEditorForReadOnly(value: boolean) {
-    this._showEditorForReadOnlyMarkdown = value;
-    if (value === false) {
-      this.rendered = true;
-    }
-  }
-
-  /**
-   * Renderer
-   */
-  get renderer(): IRenderMime.IRenderer {
-    return this._renderer;
-  }
-
-  /**
-   * Dispose of the resources held by the widget.
-   */
-  dispose(): void {
-    if (this.isDisposed) {
-      return;
-    }
-    this._monitor.dispose();
-    super.dispose();
-  }
-
-  /**
-   * Create children widgets.
-   */
-  protected initializeDOM(): void {
-    if (!this.placeholder) {
+    // Bail if the window is losing focus, to preserve edit mode. This test
+    // assumes that we explicitly focus things rather than calling blur()
+    if (!relatedTarget) {
       return;
     }
 
-    super.initializeDOM();
-
-    this.renderCollapseButtons(this._renderer!);
-
-    this._handleRendered().catch(reason => {
-      console.error('Failed to render', reason);
-    });
-  }
-
-  protected maybeCreateCollapseButton(): void {
-    const { level } = this.headingInfo;
-    if (
-      level > 0 &&
-      this.inputArea?.promptNode.getElementsByClassName(HEADING_COLLAPSER_CLASS)
-        .length == 0
-    ) {
-      let collapseButton = this.inputArea.promptNode.appendChild(
-        document.createElement('button')
-      );
-      collapseButton.className = `jp-Button ${HEADING_COLLAPSER_CLASS}`;
-      collapseButton.setAttribute('data-heading-level', level.toString());
-      if (this._headingCollapsed) {
-        collapseButton.classList.add('jp-mod-collapsed');
-      } else {
-        collapseButton.classList.remove('jp-mod-collapsed');
+    // Bail if the item gaining focus is another cell,
+    // and we should not be entering command mode.
+    const index = this._findCell(relatedTarget);
+    if (index !== -1) {
+      const widget = this.widgets[index];
+      if (widget.editorWidget?.node.contains(relatedTarget)) {
+        return;
       }
-      collapseButton.onclick = (event: Event) => {
-        this.headingCollapsed = !this.headingCollapsed;
-      };
     }
-  }
 
-  /**
-   * Create, update or remove the hidden cells button.
-   * Note that the actual visibility is controlled in Static Notebook by toggling jp-mod-showHiddenCellsButton class.
-   */
-  protected maybeCreateOrUpdateExpandButton(): void {
-    const showHiddenCellsButtonList = this.node.getElementsByClassName(
-      SHOW_HIDDEN_CELLS_CLASS
-    );
-    let trans = this.translator.load('jupyterlab');
-    let buttonText = trans._n(
-      '%1 cell hidden',
-      '%1 cells hidden',
-      this._numberChildNodes
-    );
-    let needToCreateButton =
-      this.headingCollapsed &&
-      this._numberChildNodes > 0 &&
-      showHiddenCellsButtonList.length == 0;
-    if (needToCreateButton) {
-      const newShowHiddenCellsButton = document.createElement('button');
-      newShowHiddenCellsButton.className = `jp-mod-minimal jp-Button ${SHOW_HIDDEN_CELLS_CLASS}`;
-      addIcon.render(newShowHiddenCellsButton);
-      const buttonTextElement = document.createElement('div');
-      buttonTextElement.textContent = buttonText;
-      newShowHiddenCellsButton.appendChild(buttonTextElement);
-      newShowHiddenCellsButton.onclick = () => {
-        this.headingCollapsed = false;
-      };
-      this.node.appendChild(newShowHiddenCellsButton);
-    }
-    let needToUpdateButtonText =
-      this.headingCollapsed &&
-      this._numberChildNodes > 0 &&
-      showHiddenCellsButtonList.length == 1;
-    if (needToUpdateButtonText) {
-      showHiddenCellsButtonList[0].childNodes[1].textContent = buttonText;
-    }
-    let needToRemoveButton = !(
-      this.headingCollapsed && this._numberChildNodes > 0
-    );
-    if (needToRemoveButton) {
-      for (const button of showHiddenCellsButtonList) {
-        this.node.removeChild(button);
+    // Otherwise enter command mode if not already.
+    if (this.mode !== 'command') {
+      this.mode = 'command';
+
+      // Switching to command mode currently focuses the notebook element, so
+      // refocus the relatedTarget so the focus actually switches as intended.
+      if (relatedTarget) {
+        relatedTarget.focus();
       }
     }
   }
 
   /**
-   * Callback on content changed
+   * Handle `dblclick` events for the widget.
    */
-  protected onContentChanged(): void {
-    this._headingsCache = null;
-  }
-
-  /**
-   * Render the collapse button for heading cells,
-   * and for collapsed heading cells render the "expand hidden cells"
-   * button.
-   */
-  protected renderCollapseButtons(widget: Widget): void {
-    this.node.classList.toggle(
-      MARKDOWN_HEADING_COLLAPSED,
-      this._headingCollapsed
-    );
-    this.maybeCreateCollapseButton();
-    this.maybeCreateOrUpdateExpandButton();
-  }
-
-  /**
-   * Render an input instead of the text editor.
-   */
-  protected renderInput(widget: Widget): void {
-    this.addClass(RENDERED_CLASS);
-    if (!this.placeholder && !this.isDisposed) {
-      this.renderCollapseButtons(widget);
-      this.inputArea!.renderInput(widget);
-    }
-  }
-
-  /**
-   * Show the text editor instead of rendered input.
-   */
-  protected showEditor(): void {
-    this.removeClass(RENDERED_CLASS);
-    if (!this.placeholder && !this.isDisposed) {
-      this.inputArea!.showEditor();
-      // if this is going to be a heading, place the cursor accordingly
-      let numHashAtStart = (this.model.sharedModel
-        .getSource()
-        .match(/^#+/g) || [''])[0].length;
-      if (numHashAtStart > 0) {
-        this.inputArea!.editor.setCursorPosition({
-          column: numHashAtStart + 1,
-          line: 0
-        });
-      }
-    }
-  }
-
-  /*
-   * Handle `update-request` messages.
-   */
-  protected onUpdateRequest(msg: Message): void {
-    // Make sure we are properly rendered.
-    this._handleRendered().catch(reason => {
-      console.error('Failed to render', reason);
-    });
-    super.onUpdateRequest(msg);
-  }
-
-  /**
-   * Modify the cell source to include a reference to the attachment.
-   */
-  protected updateCellSourceWithAttachment(
-    attachmentName: string,
-    URI?: string
-  ): void {
-    const textToBeAppended = `![${attachmentName}](attachment:${
-      URI ?? attachmentName
-    })`;
-    // TODO this should be done on the model...
-    this.editor?.replaceSelection?.(textToBeAppended);
-  }
-
-  /**
-   * Handle the rendered state.
-   */
-  private async _handleRendered(): Promise<void> {
-    if (!this._rendered) {
-      this.showEditor();
-    } else {
-      // TODO: It would be nice for the cell to provide a way for
-      // its consumers to hook into when the rendering is done.
-      await this._updateRenderedInput();
-      if (this._rendered) {
-        // The rendered flag may be updated in the mean time
-        this.renderInput(this._renderer);
-      }
-    }
-  }
-
-  /**
-   * Update the rendered input.
-   */
-  private _updateRenderedInput(): Promise<void> {
-    if (this.placeholder) {
-      return Promise.resolve();
-    }
-
+  private _evtDblClick(event: MouseEvent): void {
     const model = this.model;
-    const text =
-      (model && model.sharedModel.getSource()) || DEFAULT_MARKDOWN_TEXT;
-    // Do not re-render if the text has not changed.
-    if (text !== this._prevText) {
-      const mimeModel = new MimeModel({ data: { 'text/markdown': text } });
-      this._prevText = text;
-      return this._renderer.renderModel(mimeModel);
+    if (!model) {
+      return;
     }
-    return Promise.resolve();
+    this.deselectAll();
+
+    const [target, index] = this._findEventTargetAndCell(event);
+
+    if (
+      (event.target as HTMLElement).classList.contains(HEADING_COLLAPSER_CLASS)
+    ) {
+      return;
+    }
+    if (index === -1) {
+      return;
+    }
+    this.activeCellIndex = index;
+    if (model.cells.get(index).type === 'markdown') {
+      const widget = this.widgets[index] as MarkdownCell;
+      widget.rendered = false;
+    } else if (target.localName === 'img') {
+      target.classList.toggle(UNCONFINED_CLASS);
+    }
   }
 
   /**
-   * Clone the cell, using the same model.
+   * Remove selections from inactive cells to avoid
+   * spurious cursors.
    */
-  clone(): MarkdownCell {
-    const constructor = this.constructor as typeof MarkdownCell;
-    return new constructor({
-      model: this.model,
-      contentFactory: this.contentFactory,
-      rendermime: this._rendermime,
-      placeholder: false,
-      translator: this.translator
-    });
+  private _trimSelections(): void {
+    for (let i = 0; i < this.widgets.length; i++) {
+      if (i !== this._activeCellIndex) {
+        const cell = this.widgets[i];
+        if (!cell.model.isDisposed && cell.editor) {
+          cell.model.selections.delete(cell.editor.uuid);
+        }
+      }
+    }
   }
 
-  private _headingsCache: Cell.IHeading[] | null = null;
-  private _headingCollapsed: boolean;
-  private _headingCollapsedChanged = new Signal<MarkdownCell, boolean>(this);
-  private _monitor: ActivityMonitor<ICellModel, void>;
-  private _numberChildNodes: number;
-  private _prevText = '';
-  private _renderer: IRenderMime.IRenderer;
-  private _rendermime: IRenderMimeRegistry;
-  private _rendered = true;
-  private _renderedChanged = new Signal<this, boolean>(this);
-  private _showEditorForReadOnlyMarkdown = true;
+  private _activeCellIndex = -1;
+  private _activeCell: Cell | null = null;
+  private _mode: NotebookMode = 'command';
+  private _drag: Drag | null = null;
+  private _dragData: {
+    pressX: number;
+    pressY: number;
+    index: number;
+  } | null = null;
+  private _mouseMode: 'select' | 'couldDrag' | null = null;
+  private _activeCellChanged = new Signal<this, Cell | null>(this);
+  private _stateChanged = new Signal<this, IChangedArgs<any>>(this);
+  private _selectionChanged = new Signal<this, void>(this);
+
+  // Attributes for optimized cell refresh:
+  private _cellLayoutStateCache?: { width: number };
+  private _checkCacheOnNextResize = false;
+
+  private _lastClipboardInteraction: 'copy' | 'cut' | 'paste' | null = null;
+  private _updateSelectedCells(): void {
+    this._selectedCells = this.widgets.filter(cell =>
+      this.isSelectedOrActive(cell)
+    );
+  }
+  private _selectedCells: Cell[] = [];
 }
 
 /**
- * The namespace for the `CodeCell` class statics.
+ * The namespace for the `Notebook` class statics.
  */
-export namespace MarkdownCell {
+export namespace Notebook {
   /**
-   * An options object for initializing a base cell widget.
+   * An options object for initializing a notebook widget.
    */
-  export interface IOptions extends Cell.IOptions<IMarkdownCellModel> {
+  export interface IOptions extends StaticNotebook.IOptions {}
+
+  /**
+   * The content factory for the notebook widget.
+   */
+  export interface IContentFactory extends StaticNotebook.IContentFactory {}
+
+  /**
+   * The default implementation of a notebook content factory..
+   *
+   * #### Notes
+   * Override methods on this class to customize the default notebook factory
+   * methods that create notebook content.
+   */
+  export class ContentFactory extends StaticNotebook.ContentFactory {}
+
+  /**
+   * A namespace for the notebook content factory.
+   */
+  export namespace ContentFactory {
     /**
-     * The mime renderer for the cell widget.
+     * An options object for initializing a notebook content factory.
      */
-    rendermime: IRenderMimeRegistry;
+    export interface IOptions extends StaticNotebook.ContentFactory.IOptions {}
+  }
+}
 
+/**
+ * A namespace for private data.
+ */
+namespace Private {
+  /**
+   * An attached property for the selected state of a cell.
+   */
+  export const selectedProperty = new AttachedProperty<Cell, boolean>({
+    name: 'selected',
+    create: () => false
+  });
+
+  /**
+   * A custom panel layout for the notebook.
+   */
+  export class NotebookPanelLayout extends PanelLayout {
     /**
-     * Show editor for read-only Markdown cells.
+     * A message handler invoked on an `'update-request'` message.
+     *
+     * #### Notes
+     * This is a reimplementation of the base class method,
+     * and is a no-op.
      */
-    showEditorForReadOnlyMarkdown?: boolean;
+    protected onUpdateRequest(msg: Message): void {
+      // This is a no-op.
+    }
   }
 
   /**
-   * Default value for showEditorForReadOnlyMarkdown.
+   * Create a cell drag image.
    */
-  export const defaultShowEditorForReadOnlyMarkdown = true;
-}
-
-/** ****************************************************************************
- * RawCell
- ******************************************************************************/
-
-/**
- * A widget for a raw cell.
- */
-export class RawCell extends Cell<IRawCellModel> {
-  /**
-   * Construct a raw cell widget.
-   */
-  constructor(options: RawCell.IOptions) {
-    super(options);
-    this.addClass(RAW_CELL_CLASS);
-    const trans = this.translator.load('jupyterlab');
-    this.node.setAttribute('aria-label', trans.__('Raw Cell Content'));
+  export function createDragImage(
+    count: number,
+    promptNumber: string,
+    cellContent: string
+  ): HTMLElement {
+    if (count > 1) {
+      if (promptNumber !== '') {
+        return VirtualDOM.realize(
+          h.div(
+            h.div(
+              { className: DRAG_IMAGE_CLASS },
+              h.span(
+                { className: CELL_DRAG_PROMPT_CLASS },
+                '[' + promptNumber + ']:'
+              ),
+              h.span({ className: CELL_DRAG_CONTENT_CLASS }, cellContent)
+            ),
+            h.div({ className: CELL_DRAG_MULTIPLE_BACK }, '')
+          )
+        );
+      } else {
+        return VirtualDOM.realize(
+          h.div(
+            h.div(
+              { className: DRAG_IMAGE_CLASS },
+              h.span({ className: CELL_DRAG_PROMPT_CLASS }),
+              h.span({ className: CELL_DRAG_CONTENT_CLASS }, cellContent)
+            ),
+            h.div({ className: CELL_DRAG_MULTIPLE_BACK }, '')
+          )
+        );
+      }
+    } else {
+      if (promptNumber !== '') {
+        return VirtualDOM.realize(
+          h.div(
+            h.div(
+              { className: `${DRAG_IMAGE_CLASS} ${SINGLE_DRAG_IMAGE_CLASS}` },
+              h.span(
+                { className: CELL_DRAG_PROMPT_CLASS },
+                '[' + promptNumber + ']:'
+              ),
+              h.span({ className: CELL_DRAG_CONTENT_CLASS }, cellContent)
+            )
+          )
+        );
+      } else {
+        return VirtualDOM.realize(
+          h.div(
+            h.div(
+              { className: `${DRAG_IMAGE_CLASS} ${SINGLE_DRAG_IMAGE_CLASS}` },
+              h.span({ className: CELL_DRAG_PROMPT_CLASS }),
+              h.span({ className: CELL_DRAG_CONTENT_CLASS }, cellContent)
+            )
+          )
+        );
+      }
+    }
   }
 
   /**
-   * Clone the cell, using the same model.
+   * Information about resolved scroll target defined by URL fragment.
    */
-  clone(): RawCell {
-    const constructor = this.constructor as typeof RawCell;
-    return new constructor({
-      model: this.model,
-      contentFactory: this.contentFactory,
-      placeholder: false,
-      translator: this.translator
-    });
+  export interface IScrollTarget {
+    /**
+     * Target cell.
+     */
+    cell: Cell;
+    /**
+     * Element to scroll to within the cell.
+     */
+    element?: HTMLElement;
   }
-}
 
-/**
- * The namespace for the `RawCell` class statics.
- */
-export namespace RawCell {
   /**
-   * An options object for initializing a base cell widget.
+   * Parsed fragment identifier data.
    */
-  export interface IOptions extends Cell.IOptions<IRawCellModel> {}
+  export interface IFragmentData {
+    /**
+     * The kind of notebook element targetted by the fragment identifier.
+     */
+    kind: 'heading' | 'cell-id';
+    /*
+     * The value of the fragment query.
+     */
+    value: string;
+  }
 }
