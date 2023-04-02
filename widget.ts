@@ -83,6 +83,11 @@ import { InputPlaceholder, OutputPlaceholder } from './placeholder';
 
 import { ResizeHandle } from './resizeHandle';
 
+import { CommandRegistry } from '@lumino/commands';
+import { IDisposable } from '@lumino/disposable';
+
+
+
 /**
  * The CSS class added to cell widgets.
  */
@@ -961,6 +966,17 @@ export class CodeCellLayout extends PanelLayout {
  * A widget for a code cell.
  */
 export class CodeCell extends Cell<ICodeCellModel> {
+  private _createAIButton(): HTMLElement {
+    const button = document.createElement('button');
+    button.className = 'ai-button';
+    button.textContent = 'AI Button';
+    button.title = 'Send to ChatGPT API';
+    button.onclick = () => {
+      // TODO: Implement the onClick event handler to send the cell content to ChatGPT API and print the output in the next cell.
+    };
+    return button;
+  }
+  
   /**
    * Construct a code cell widget.
    */
@@ -968,6 +984,9 @@ export class CodeCell extends Cell<ICodeCellModel> {
     super({ layout: new CodeCellLayout(), ...options, placeholder: true });
     this.addClass(CODE_CELL_CLASS);
     const trans = this.translator.load('jupyterlab');
+    
+		const aiButton = this._createAIButton();
+    this.inputArea.node.insertBefore(aiButton, this.inputArea.node.firstChild);    
 
     // Only save options not handled by parent constructor.
     const rendermime = (this._rendermime = options.rendermime);
